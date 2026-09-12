@@ -46,10 +46,17 @@ export function AIInterpretation({ analysisType, results, userProfile }: AIInter
         }
 
         // Check cache first
-        const cacheKey = JSON.stringify({ analysisType, results: results?.data || results });
+        const effectiveResults = results?.data ?? results;
+        const cacheKey = JSON.stringify({ analysisType, results: effectiveResults });
         if (cache.has(cacheKey)) {
             setStructured(JSON.parse(cache.get(cacheKey)!));
             setError(null);
+            return;
+        }
+
+        // Guard: nếu chưa có kết quả phân tích thì không gọi API
+        if (effectiveResults === null || effectiveResults === undefined) {
+            setError('Chưa có kết quả phân tích. Hãy chạy phân tích trước.');
             return;
         }
 
@@ -67,7 +74,7 @@ export function AIInterpretation({ analysisType, results, userProfile }: AIInter
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     analysisType,
-                    results: results?.data || results,
+                    results: effectiveResults,
                     scaleName,
                     variableNames
                 })
