@@ -340,14 +340,18 @@ export async function runPLSSEM(
     # Safe extractions for all summary components
     paths_res <- tryCatch(matrix_to_list(summ$paths), error = function(e) list())
     
-    # R-squared extraction (try seminr paths$Rsq first, else manual calc)
+    # R-squared extraction — always produce a flat named list {constructName: r2_value}
+    # summ$paths is a matrix (not a list), so we extract the "Rsq" column directly.
     r_sq <- tryCatch({
-      if (is.list(summ$paths) && !is.null(summ$paths$Rsq)) {
-        as.list(summ$paths$Rsq)
-      } else if (!is.null(summ$paths) && is.list(summ$paths) && !is.null(summ$paths$rSquared)) {
-        as.list(summ$paths$rSquared)
+      paths_mat <- summ$paths
+      # Try extracting Rsq column from the paths matrix (seminr standard)
+      rsq_col <- safe_col(paths_mat, "Rsq")
+      if (!all(is.na(rsq_col)) && !is.null(rownames(paths_mat))) {
+        # Build flat named list: {construct → r2}; only include rows where Rsq > 0
+        rsq_named <- setNames(as.list(rsq_col), rownames(paths_mat))
+        Filter(function(v) !is.na(v) && v > 0, rsq_named)
       } else {
-        # Manual fallback
+        # Manual fallback: regress each endogenous construct on its predictors
         scores <- pls_model$construct_scores
         sm_mat <- pls_model$smMatrix
         endogenous <- unique(sm_mat[, "target"])
@@ -355,20 +359,33 @@ export async function runPLSSEM(
         for (endo in endogenous) {
           preds <- sm_mat[sm_mat[, "target"] == endo, "source"]
           if (length(preds) > 0) {
-            df_lm <- data.frame(y = as.numeric(scores[, endo]), as.matrix(scores[, preds, drop=FALSE]))
+            df_lm <- data.frame(y = as.numeric(scores[, endo]),
+                                as.matrix(scores[, preds, drop = FALSE]))
             lm_res <- lm(y ~ ., data = df_lm)
             r2_list[[endo]] <- summary(lm_res)$r.squared
           }
         }
         r2_list
       }
-    }, error = function(e) list(Error = as.character(e)))
+    }, error = function(e) list())
 
     f_sq <- tryCatch(matrix_to_list(summ$fSquare), error = function(e) list())
     load_res <- tryCatch(matrix_to_list(summ$loadings), error = function(e) list())
     total_eff <- tryCatch(matrix_to_list(summ$total_effects), error = function(e) list())
     fl_res <- tryCatch(matrix_to_list(fornell_larcker), error = function(e) list())
     htmt_out <- tryCatch(matrix_to_list(htmt_res), error = function(e) list())
+    
+    # composite_reliability: seminr >= 2.3 uses "rhoC"; older versions use "composite_reliability"
+    rhoC_col <- tryCatch({
+      col_val <- safe_col(summ$reliability, "rhoC")
+      if (all(is.na(col_val))) safe_col(summ$reliability, "composite_reliability") else col_val
+    }, error = function(e) rep(NA, nrow(summ$reliability)))
+    
+    # AVE: seminr uses "AVE" (uppercase)
+    ave_col <- tryCatch({
+      col_val <- safe_col(summ$reliability, "AVE")
+      if (all(is.na(col_val))) safe_col(summ$reliability, "ave") else col_val
+    }, error = function(e) rep(NA, nrow(summ$reliability)))
     
     # Harman's Single Factor Test (CMB)
     harman_out <- tryCatch({
@@ -430,8 +447,8 @@ export async function runPLSSEM(
       validity = list(
         cronbach = as.list(safe_col(summ$reliability, "alpha")),
         rho_a = as.list(safe_col(summ$reliability, "rhoA")),
-        composite_reliability = as.list(safe_col(summ$reliability, "rhoC")),
-        ave = as.list(safe_col(summ$reliability, "ave"))
+        composite_reliability = as.list(rhoC_col),
+        ave = as.list(ave_col)
       )
     )
   `;

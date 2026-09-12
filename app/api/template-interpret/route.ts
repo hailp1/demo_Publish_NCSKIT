@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
         const { analysisType, results, scaleName, variableNames } = await req.json();
 
-        if (!analysisType || !results) {
+        if (!analysisType || results === undefined || results === null) {
             return NextResponse.json(
                 { error: 'Missing analysisType or results' },
                 { status: 400 }
@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
                 break;
 
             case 'ttest':
+            case 'ttest-indep':
             case 'ttest_independent':
                 interpretation = interpretTTestIndependent({
                     groupVar: variableNames?.groupVar || 'Biến phân nhóm',
@@ -169,6 +170,7 @@ export async function POST(req: NextRequest) {
                 break;
 
             case 'cfa':
+            case 'sem':
                 interpretation = interpretCFA({
                     chi2: results.fitMeasures?.chisq || 0,
                     df: results.fitMeasures?.df || 0,
