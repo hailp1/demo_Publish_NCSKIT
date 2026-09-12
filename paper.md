@@ -93,7 +93,42 @@ but suffer from non-determinism and factual hallucination
    peer-reviewed methodological thresholds. Every threshold, every citation,
    and every generated sentence is auditable in the open-source codebase.
 
-# System Architecture
+# State of the Field
+
+Several tools address quantitative research in the social sciences, each with
+distinct trade-offs.
+
+**JASP** [@love2019jasp] and **Jamovi** [@the2022jamovi] provide SPSS-like GUIs
+over an R backend and support a broad range of analyses. However, both require
+local installation, which creates barriers for Chromebook users, institutional
+IT restrictions, and remote-learning environments. Neither supports PLS-SEM
+natively; users must install additional modules. Critically, both execute R on
+the user's machine rather than in a sandboxed browser environment, exposing the
+host OS to package dependency conflicts.
+
+**RStudio Server** and **Posit Cloud** bring R to the browser but retain a
+server-side architecture, reintroducing the data-privacy and scalability
+concerns that `NCSKit` is designed to eliminate.
+
+**SmartPLS** [@ringle2022smartpls] is the dominant tool for PLS-SEM but is
+commercial, closed-source, and requires per-user licensing.
+
+**R/Shiny** [@chang2015shiny] enables rapid web application development around R
+but inherits the Shiny Scaling Problem: a single R process handles all concurrent
+users, leading to CPU saturation under classroom-scale loads.
+
+`NCSKit` was built rather than extending existing tools for three reasons.
+First, no existing open-source tool combines browser-native R execution with
+automated APA interpretation — the ASIG engine is a novel contribution that
+does not map onto any existing package's architecture. Second, the WebAssembly
+compilation pipeline (`WebR`) is a fundamentally different execution model than
+any existing statistical GUI, requiring architectural decisions (PostMessage
+channel, self-hosted WASM packages, IDBFS caching) that are incompatible with
+the designs of JASP or Jamovi. Third, `NCSKit` targets a specific underserved
+audience: researchers in developing nations and resource-constrained institutions
+who cannot afford commercial licenses or reliable cloud connectivity.
+
+# Software Design
 
 ## WebR Integration and the PostMessage Bridge
 
@@ -213,7 +248,7 @@ single-run measurements. A reproducible benchmark script is provided in
 ≥ 30 independent runs on standardised hardware, and will include a fairer
 ARM-based cloud instance (e.g., AWS c7g.large) as a second baseline.
 
-# Research Impact
+# Research Impact Statement
 
 `NCSKit` is actively deployed at [https://ncskit.org](https://ncskit.org) and
 has been used in graduate research methods courses and thesis supervision at

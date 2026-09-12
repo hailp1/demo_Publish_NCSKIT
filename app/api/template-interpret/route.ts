@@ -4,13 +4,25 @@ import {
     interpretCronbachAlpha,
     interpretCorrelation,
     interpretTTestIndependent,
+    interpretTTestPaired,
     interpretANOVA,
+    interpretTwoWayANOVA,
     interpretLinearRegression,
     interpretLogisticRegression,
+    interpretMannWhitney,
+    interpretKruskalWallis,
+    interpretWilcoxonSigned,
     interpretChiSquare,
     interpretEFA,
     interpretCFA,
     interpretMediation,
+    interpretModeration,
+    interpretClusterAnalysis,
+    interpretDescriptive,
+    interpretVIF,
+    interpretOutlier,
+    interpretHTMT,
+    interpretPLSSEM,
     InterpretationResult
 } from '@/lib/asig';
 import { validateOrigin } from '@/utils/csrf-protection';
@@ -185,11 +197,155 @@ export async function POST(req: NextRequest) {
                 });
                 break;
 
+            case 'moderation':
+                interpretation = interpretModeration({
+                    xVar: variableNames?.x || 'X',
+                    mVar: variableNames?.m || 'M',
+                    yVar: variableNames?.y || 'Y',
+                    interactionTerm: results.interactionTerm || 'X:M',
+                    interactionEstimate: results.interactionEstimate || 0,
+                    interactionP: results.interactionP || 1,
+                    simpleSlopes: results.slopes
+                });
+                break;
+
+            case 'ttest_paired':
+            case 'ttest-paired':
+                interpretation = interpretTTestPaired({
+                    targetVar: variableNames?.targetVar || 'Dependent Variable',
+                    meanBefore: results.meanBefore || 0,
+                    sdBefore: results.sdBefore || 0,
+                    meanAfter: results.meanAfter || 0,
+                    sdAfter: results.sdAfter || 0,
+                    meanDiff: results.meanDiff || 0,
+                    t: results.t || 0,
+                    df: results.df || 0,
+                    pValue: results.pValue || 0,
+                    cohensD: results.effectSize,
+                    normalityDiffP: results.normalityDiffP
+                });
+                break;
+
+            case 'two_way_anova':
+            case 'twoway-anova':
+                interpretation = interpretTwoWayANOVA({
+                    factor1: variableNames?.factor1 || 'Factor 1',
+                    factor2: variableNames?.factor2 || 'Factor 2',
+                    targetVar: variableNames?.targetVar || 'Dependent Variable',
+                    mainEffect1F: results.factor1F || 0,
+                    mainEffect1P: results.factor1P ?? 1,
+                    mainEffect2F: results.factor2F || 0,
+                    mainEffect2P: results.factor2P ?? 1,
+                    interactionF: results.interactionF || 0,
+                    interactionP: results.interactionP ?? 1,
+                    df1: results.factor1Df || 0,
+                    df2: results.factor2Df || 0,
+                    dfError: results.residualDf || 0
+                });
+                break;
+
+            case 'mann_whitney':
+            case 'mann-whitney':
+                interpretation = interpretMannWhitney({
+                    group1Name: variableNames?.group1 || 'Group 1',
+                    group2Name: variableNames?.group2 || 'Group 2',
+                    targetVar: variableNames?.targetVar || 'Dependent Variable',
+                    statistic: results.statistic || 0,
+                    pValue: results.pValue || 0,
+                    median1: results.median1 || 0,
+                    median2: results.median2 || 0,
+                    effectSize: results.effectSize
+                });
+                break;
+
+            case 'kruskal_wallis':
+            case 'kruskal-wallis':
+            case 'kruskal':
+                interpretation = interpretKruskalWallis({
+                    factorVar: variableNames?.factorVar || 'Grouping Variable',
+                    targetVar: variableNames?.targetVar || 'Dependent Variable',
+                    statistic: results.statistic || 0,
+                    df: results.df || 0,
+                    pValue: results.pValue || 0,
+                    medians: results.medians || []
+                });
+                break;
+
+            case 'wilcoxon_signed':
+            case 'wilcoxon-signed':
+            case 'wilcoxon':
+                interpretation = interpretWilcoxonSigned({
+                    targetVar: variableNames?.targetVar || 'Dependent Variable',
+                    statistic: results.statistic || 0,
+                    pValue: results.pValue || 0,
+                    medianDiff: results.medianDiff || 0
+                });
+                break;
+
+            case 'cluster':
+            case 'cluster_analysis':
+                interpretation = interpretClusterAnalysis({
+                    method: results.method || 'K-Means',
+                    nClusters: results.nClusters || results.k || 0,
+                    totalSS: results.totalSS || 0,
+                    withinSS: results.totWithinSS || 0,
+                    betweenSS: results.betweensSS || 0,
+                    silhouetteScore: results.silhouetteScore
+                });
+                break;
+
+            case 'descriptive':
+            case 'descriptive_stats':
+                interpretation = interpretDescriptive({
+                    columnNames: results.columnNames || [],
+                    means: results.mean || [],
+                    sds: results.sd || [],
+                    skews: results.skew || [],
+                    kurtoses: results.kurtosis || [],
+                    N: results.N || []
+                });
+                break;
+
+            case 'vif':
+                interpretation = interpretVIF({
+                    vifValues: results.vif_values || [],
+                    variableNames: results.variable_names || []
+                });
+                break;
+
+            case 'outlier':
+                interpretation = interpretOutlier({
+                    nOutliers: results.n_outliers || 0,
+                    totalN: results.mahalanobis_distances?.length || 0,
+                    cutoffValue: results.cutoff_value || 0
+                });
+                break;
+
+            case 'htmt':
+                interpretation = interpretHTMT({
+                    htmtMatrix: results.htmt_matrix || [],
+                    factorNames: results.factor_names || [],
+                    threshold: results.threshold || 0.85
+                });
+                break;
+
+            case 'pls-sem':
+            case 'plssem':
+                interpretation = interpretPLSSEM({
+                    fornell_larcker: results.fornell_larcker,
+                    htmt: results.htmt,
+                    r_squared: results.r_squared,
+                    ave: results.ave,
+                    compositeReliability: results.compositeReliability,
+                    pathCoefficients: results.pathCoefficients
+                });
+                break;
+
             default:
                 interpretation = {
-                    summary: `Chưa có template diễn giải cho phân tích "${analysisType}".`,
+                    summary: `No ASIG template is registered for analysis type "${analysisType}". Please contact the development team.`,
                     details: [],
-                    warnings: [],
+                    warnings: ['This analysis type is not yet supported by the ASIG template engine.'],
                     citations: []
                 };
         }

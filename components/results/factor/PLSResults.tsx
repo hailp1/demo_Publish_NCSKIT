@@ -54,7 +54,26 @@ export const PLSResults: React.FC<PLSResultsProps> = ({ results }) => {
             {/* ASIG Auto-Insight */}
             <TemplateInterpretation 
                 analysisType="pls-sem" 
-                results={{ fornell_larcker, htmt, r_squared }} 
+                results={{ 
+                    fornell_larcker, 
+                    htmt, 
+                    r_squared,
+                    ave: validity?.ave,
+                    compositeReliability: validity?.composite_reliability,
+                    pathCoefficients: path_coefficients
+                        ? Object.entries(path_coefficients).flatMap(([to, froms]: [string, any]) =>
+                            Object.entries(froms || {})
+                                .filter(([from, val]: [any, any]) => val !== 0 && from !== 'R^2' && from !== 'AdjR^2')
+                                .map(([from, val]: [string, any]) => ({
+                                    from,
+                                    to,
+                                    beta: val as number,
+                                    tValue: bootstrapping?.boot_paths?.['T Stat.']?.[`${from} -> ${to}`],
+                                    pValue: bootstrapping?.boot_paths?.['P Value']?.[`${from} -> ${to}`],
+                                }))
+                          )
+                        : undefined
+                }} 
             />
 
             {/* 1. Construct Reliability & Validity */}
