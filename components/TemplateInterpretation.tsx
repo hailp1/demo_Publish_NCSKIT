@@ -33,6 +33,7 @@ import {
     interpretVIF,
     interpretOutlier,
     interpretHTMT,
+    interpretPLSSEM,
     InterpretationResult
 } from '@/lib/asig';
 
@@ -71,9 +72,9 @@ export function TemplateInterpretation({
                         // Only show Omega if specifically requested (analysisType is omega)
                         omega: (analysisType.includes('omega')) ? results.omega : undefined,
                         isOmegaPrimary: analysisType.includes('omega'),
-                        badItems: results.itemStats
-                            ?.filter((item: any) => item.correctedItemTotal < 0.3)
-                            ?.map((item: any) => item.variable) || []
+                        badItems: results.itemTotalStats
+                            ?.filter((item: any) => item.correctedItemTotalCorrelation < 0.3)
+                            ?.map((item: any) => item.itemName || item.variable) || []
                     });
                     break;
 
@@ -308,7 +309,7 @@ export function TemplateInterpretation({
                 case 'descriptive':
                 case 'descriptive_stats':
                     result = interpretDescriptive({
-                        columnNames: results.columnNames || [],
+                        columnNames: results.columnNames || results.columns || [],
                         means: results.mean || [],
                         sds: results.sd || [],
                         skews: results.skew || [],
@@ -337,6 +338,18 @@ export function TemplateInterpretation({
                         htmtMatrix: results.htmt_matrix || [],
                         factorNames: results.factor_names || [],
                         threshold: results.threshold || 0.85
+                    });
+                    break;
+
+                case 'pls-sem':
+                case 'plssem':
+                    result = interpretPLSSEM({
+                        fornell_larcker: results.fornell_larcker,
+                        htmt: results.htmt,
+                        r_squared: results.r_squared,
+                        ave: results.ave ?? results.validity?.ave,
+                        compositeReliability: results.compositeReliability ?? results.validity?.composite_reliability,
+                        pathCoefficients: results.pathCoefficients
                     });
                     break;
 

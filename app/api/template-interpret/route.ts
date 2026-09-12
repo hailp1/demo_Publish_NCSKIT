@@ -64,12 +64,17 @@ export async function POST(req: NextRequest) {
         switch (analysisType) {
             case 'cronbach':
             case 'cronbach_alpha':
+            case 'omega':
+            case 'cronbach-batch':
+            case 'omega-batch':
                 interpretation = interpretCronbachAlpha({
                     scaleName: scaleName || 'Thang đo',
                     nItems: results.nItems || 0,
                     alpha: results.alpha || results.rawAlpha || 0,
-                    omega: results.omega || undefined,
-                    badItems: results.badItems || []
+                    omega: analysisType.includes('omega') ? results.omega : undefined,
+                    badItems: results.itemTotalStats
+                        ?.filter((item: any) => item.correctedItemTotalCorrelation < 0.3)
+                        ?.map((item: any) => item.itemName || item.variable) || results.badItems || []
                 });
                 break;
 
@@ -77,8 +82,12 @@ export async function POST(req: NextRequest) {
                 interpretation = interpretCorrelation({
                     var1: variableNames?.[0] || 'Biến 1',
                     var2: variableNames?.[1] || 'Biến 2',
-                    r: results.r || results.correlation || 0,
-                    pValue: results.pValue || results.p || 0,
+                    r: results.r ?? results.correlation
+                        ?? (Array.isArray(results.correlationMatrix) ? results.correlationMatrix[0]?.[1] : 0)
+                        ?? 0,
+                    pValue: results.pValue ?? results.p
+                        ?? (Array.isArray(results.pValues) ? results.pValues[0]?.[1] : 0)
+                        ?? 0,
                     method: results.method || 'pearson'
                 });
                 break;
@@ -299,7 +308,7 @@ export async function POST(req: NextRequest) {
             case 'descriptive':
             case 'descriptive_stats':
                 interpretation = interpretDescriptive({
-                    columnNames: results.columnNames || [],
+                    columnNames: results.columnNames || results.columns || [],
                     means: results.mean || [],
                     sds: results.sd || [],
                     skews: results.skew || [],
@@ -341,6 +350,20 @@ export async function POST(req: NextRequest) {
                     compositeReliability: results.compositeReliability,
                     pathCoefficients: results.pathCoefficients
                 });
+                break;
+
+            case 'frequency':
+            case 'auto-pilot':
+            case 'cronbach-batch':
+            case 'omega-batch':
+                // These types don't have a dedicated ASIG template yet.
+                // Return a graceful "not supported" message instead of hitting default.
+                interpretation = {
+                    summary: `Phân tích "${analysisType}" không yêu cầu diễn giải tự động ASIG.`,
+                    details: [],
+                    warnings: [],
+                    citations: []
+                };
                 break;
 
             default:

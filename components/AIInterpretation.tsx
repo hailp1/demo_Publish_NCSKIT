@@ -81,7 +81,8 @@ export function AIInterpretation({ analysisType, results, userProfile }: AIInter
             });
 
             if (!response.ok) {
-                throw new Error(`Lỗi Server: ${response.statusText}`);
+                const errBody = await response.json().catch(() => ({}));
+                throw new Error(errBody.error || `Lỗi Server: ${response.statusText}`);
             }
 
             const data = await response.json();

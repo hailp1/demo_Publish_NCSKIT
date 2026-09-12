@@ -111,7 +111,7 @@ export const DescriptiveResults = React.memo(function DescriptiveResults({ resul
             {/* Professional Template Interpretation */}
             <TemplateInterpretation 
                 analysisType="descriptive"
-                results={results}
+                results={{ ...results, columnNames: columns }}
             />
         </div>
     );
