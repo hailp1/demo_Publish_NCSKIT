@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Database, FileText, Activity, Users, Box, BarChart } from 'lucide-react';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface ClusterResultsProps {
     results: any;
@@ -97,7 +97,7 @@ export const ClusterResults = React.memo(function ClusterResults({ results, colu
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="cluster"
                 results={results}
             />

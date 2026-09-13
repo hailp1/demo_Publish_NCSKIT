@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Database, FileText, Activity, Info, BarChart } from 'lucide-react';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface MannWhitneyResultsProps {
     results: any;
@@ -90,7 +90,7 @@ export const MannWhitneyResults = React.memo(function MannWhitneyResults({ resul
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="mann_whitney"
                 results={results}
                 variableNames={variableNames}

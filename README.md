@@ -13,7 +13,7 @@
 ## Summary
 
 `NCSKit` is an open-source web application that runs a complete R statistical
-environment — including `lavaan`, `seminr`, and `psych` — entirely within the
+environment — including `lavaan` and `seminr` — entirely within the
 user's browser via [WebR](https://docs.r-wasm.org/webr/latest/) and
 WebAssembly. No server performs any computation. No data leaves the client
 machine. A lecturer can deploy NCSKit to an entire classroom via a single URL
@@ -35,7 +35,7 @@ numeric input always produces identical prose.
 | Problem | NCSKit's Solution |
 |:--------|:-----------------|
 | **Shiny Scaling Problem** — Shiny servers saturate under concurrent classroom load | All computation runs on the user's CPU via WASM; concurrent users never compete for shared resources |
-| **Data privacy** — IRB/GDPR prohibit uploading sensitive data to cloud servers | Datasets are loaded into browser RAM only; after WebR caches locally they never traverse the network |
+| **Data privacy** — IRB/GDPR prohibit uploading sensitive data to cloud servers | Datasets are loaded into browser RAM only; no data ever traverses the network |
 | **Interpretation gap** — Raw R output (p-values, loadings, fit indices) is routinely misread | ASIG deterministically maps every metric to APA-formatted prose grounded in peer-reviewed thresholds |
 
 ---
@@ -56,8 +56,9 @@ numeric input always produces identical prose.
 - **PDF export** — APA-formatted reports with tables and narrative
 - **R script export** — every analysis outputs the underlying R code for
   reproducibility in native R/RStudio
-- **Offline capable** — after first load, all R packages are cached via IndexedDB
-  (IDBFS); subsequent sessions require no internet connection
+- **Offline caching (planned)** — IndexedDB (IDBFS) persistence is under
+  development; per-session package loading (~15 s on first visit) is currently
+  required. The RAM-only mode is fully stable.
 
 ---
 
@@ -72,9 +73,9 @@ numeric input always produces identical prose.
 │  │  (React 19)      │                               │
 │  └────────┬─────────┘    ┌────────────────────────┐ │
 │           │               │  WebR Web Worker       │ │
-│           │ JSON payload  │  (R 4.5 / WASM)        │ │
+│           │ JSON payload  │  (R 4.4.x / WASM)      │ │
 │           ▼               │                        │ │
-│  ┌──────────────────┐    │  lavaan, seminr, psych  │ │
+│  ┌──────────────────┐    │  lavaan, seminr         │ │
 │  │  ASIG Engine     │    │  (self-hosted WASM pkgs)│ │
 │  │  lib/asig/       │    └────────────────────────┘ │
 │  │  22 interpreters │                               │
@@ -263,8 +264,10 @@ MIT © 2026 Le Phuc Hai. See [`LICENSE`](./LICENSE).
 
 Special thanks to George Stagg and the [WebR project team](https://docs.r-wasm.org)
 at Posit PBC, and to the authors of
-[`lavaan`](https://lavaan.ugent.be/) (Rosseel, 2012),
-[`seminr`](https://github.com/sem-in-r/seminr) (Hair et al., 2021), and
-[`psych`](https://cran.r-project.org/package=psych) (Revelle, 2023),
+[`lavaan`](https://lavaan.ugent.be/) (Rosseel, 2012) and
+[`seminr`](https://github.com/sem-in-r/seminr) (Hair et al., 2021),
 without whose foundational work serverless R statistical computing would not
-be possible.
+be possible. Earlier prototypes used [`psych`](https://cran.r-project.org/package=psych)
+(Revelle, 2023) for reliability analysis; the production implementation
+re-implements all affected routines in pure base R to resolve WebAssembly
+LAPACK incompatibilities.

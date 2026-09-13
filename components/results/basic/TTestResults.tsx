@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FileText, Database, Activity, Info, BarChart } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { ScientificNote } from '../shared/ScientificNote';
 
 interface TTestResultsProps {
@@ -145,7 +145,7 @@ export const TTestResults = React.memo(function TTestResults({ results, columns,
             </div>
 
             {/* Professional Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="ttest_independent"
                 results={results}
                 variableNames={variableNames}

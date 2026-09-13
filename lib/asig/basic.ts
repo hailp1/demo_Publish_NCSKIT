@@ -79,7 +79,21 @@ export function interpretDescriptive(params: {
             `should be considered for analyses involving these variables.`;
     }
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: nonNormal.length === 0 ? 'pass' : 'warning',
+        apaStatement: `Descriptive statistics were computed for ${columnNames.length} variable${columnNames.length > 1 ? 's' : ''} (N = ${N[0]}). ${nonNormal.length === 0 ? 'All variables met criteria for approximate normality (|skewness| ≤ 2, |kurtosis| ≤ 7; West et al., 1995).' : `${nonNormal.length} variable${nonNormal.length > 1 ? 's showed' : ' showed'} evidence of non-normality: ${nonNormal.join(', ')}.`}`,
+        recommendations: nonNormal.length > 0
+            ? [
+                `Consider non-parametric alternatives (e.g., Mann-Whitney U, Kruskal-Wallis) for analyses involving ${nonNormal.join(', ')}.`,
+                'Apply bootstrap confidence intervals or robust (HC) standard errors for regression-based analyses with non-normal predictors.',
+                'Examine histograms and Q-Q plots to characterise the shape of each non-normal distribution.',
+              ]
+            : [
+                'Proceed with parametric analyses — normality assumptions appear satisfied.',
+                'Report M, SD, skewness, and kurtosis in supplementary tables for transparency.',
+              ],
+    };
 }
 
 
@@ -161,7 +175,25 @@ export function interpretCorrelation(params: {
         );
     }
 
-    return { summary, details, warnings, citations };
+    const statSymbolFinal = method === 'pearson' ? 'r' : method === 'spearman' ? 'rs' : 'τ';
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `A ${method === 'pearson' ? 'Pearson product-moment' : method === 'spearman' ? 'Spearman rank-order' : 'Kendall rank'} correlation indicated a statistically significant ${Math.abs(r) < 0.30 ? 'weak' : Math.abs(r) < 0.50 ? 'moderate' : 'strong'} ${r > 0 ? 'positive' : 'negative'} association between "${var1}" and "${var2}" (${statSymbolFinal} = ${formatCoef(r)}, ${formatPValue(pValue)}).`
+            : `No statistically significant correlation was found between "${var1}" and "${var2}" (${statSymbolFinal} = ${formatCoef(r)}, ${formatPValue(pValue)}).`,
+        recommendations: pValue < 0.05
+            ? [
+                `Report r² = ${formatCoef(r * r)} to communicate shared variance (${(r * r * 100).toFixed(0)}% overlap).`,
+                'Inspect the scatter plot for non-linearity or influential points that may distort the correlation coefficient.',
+                'If causal inference is intended, consider regression or mediation analysis.',
+              ]
+            : [
+                'Report the 95% CI for the correlation coefficient to convey the range of plausible effects.',
+                'A non-significant result may reflect low power — verify adequate sample size for detecting the expected effect.',
+                'Consider Spearman rs if normality or linearity cannot be assumed.',
+              ],
+    };
 }
 
 
@@ -282,7 +314,26 @@ export function interpretTTestIndependent(params: {
         `${cohensD != null ? `, d = ${formatNum(Math.abs(cohensD))}` : ''}.`
     );
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `${isWelch ? "Welch's t-test" : 'An independent-samples t-test'} revealed a statistically significant difference in "${targetVar}" between the ${group1Name} (M = ${formatNum(mean1)}, SD = ${formatNum(sd1)}) and ${group2Name} (M = ${formatNum(mean2)}, SD = ${formatNum(sd2)}) groups, t(${formatNum(df, 0)}) = ${formatNum(t)}, ${formatPValue(pValue)}${cohensD != null ? `, d = ${formatNum(Math.abs(cohensD))}` : ''}.`
+            : `No statistically significant difference was found in "${targetVar}" between the ${group1Name} and ${group2Name} groups, t(${formatNum(df, 0)}) = ${formatNum(t)}, ${formatPValue(pValue)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                cohensD != null && Math.abs(cohensD) < 0.20
+                    ? 'Effect size is negligible (d < .20) despite significance — evaluate practical importance before drawing conclusions.'
+                    : 'Report Cohen\'s d alongside the t-statistic for standardised effect magnitude.',
+                'Consider reporting 95% CI for the mean difference to quantify practical significance.',
+                isWelch ? 'Welch\'s correction was appropriately applied — retain this approach in all future comparisons.' : 'Run Levene\'s test to verify the equal-variance assumption; switch to Welch\'s t-test if p < .05.',
+              ]
+            : [
+                'Report the 95% CI for the mean difference to bound the plausible range of the effect.',
+                'Verify that the study was adequately powered to detect the expected effect size.',
+                'If normality is violated, the Mann-Whitney U test is the appropriate non-parametric alternative.',
+              ],
+    };
 }
 
 
@@ -365,7 +416,26 @@ export function interpretTTestPaired(params: {
         );
     }
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `A paired-samples t-test indicated a statistically significant change in "${targetVar}" between the two measurement occasions, t(${formatNum(df, 0)}) = ${formatNum(t)}, ${formatPValue(pValue)}${cohensD != null ? `, d = ${formatNum(Math.abs(cohensD))}` : ''}. Mean scores changed from M = ${formatNum(meanBefore)}, SD = ${formatNum(sdBefore)} to M = ${formatNum(meanAfter)}, SD = ${formatNum(sdAfter)}.`
+            : `No statistically significant change was found in "${targetVar}" between measurement occasions, t(${formatNum(df, 0)}) = ${formatNum(t)}, ${formatPValue(pValue)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                'Report Cohen\'s d for paired data to express the standardised magnitude of change.',
+                'Report the 95% CI for the mean difference to communicate precision of the estimate.',
+                normalityDiffP != null && normalityDiffP < 0.05
+                    ? 'Difference scores violated normality — consider reporting Wilcoxon Signed-Rank results alongside for robustness.'
+                    : 'Verify that the pre-post design adequately controls for confounds (e.g., maturation, testing effects).',
+              ]
+            : [
+                'Report the 95% CI for the mean difference; a non-significant p-value does not imply no change.',
+                'Evaluate statistical power — the test may be underpowered to detect the expected effect.',
+                'If normality of difference scores is violated, the Wilcoxon Signed-Rank Test is the appropriate alternative.',
+              ],
+    };
 }
 
 
@@ -476,7 +546,26 @@ export function interpretANOVA(params: {
         `${formatPValue(pValue)}${etaSquared != null ? `, η² = ${formatCoef(etaSquared)}` : ''}.`
     );
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `${isWelch ? 'A Welch one-way ANOVA' : 'A one-way ANOVA'} revealed a statistically significant effect of "${factorVar}" on "${targetVar}", F(${formatNum(dfBetween, 0)}, ${formatNum(dfWithin, 0)}) = ${formatNum(F)}, ${formatPValue(pValue)}${etaSquared != null ? `, η² = ${formatCoef(etaSquared)}` : ''}.`
+            : `${isWelch ? 'A Welch one-way ANOVA' : 'A one-way ANOVA'} found no statistically significant effect of "${factorVar}" on "${targetVar}", F(${formatNum(dfBetween, 0)}, ${formatNum(dfWithin, 0)}) = ${formatNum(F)}, ${formatPValue(pValue)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                'Conduct post-hoc pairwise comparisons (Tukey HSD for equal variances, Games-Howell for unequal) to identify which group pairs differ.',
+                etaSquared != null && etaSquared < 0.06
+                    ? 'Effect size is small (η² < .06) — evaluate practical significance before drawing applied conclusions.'
+                    : 'Report η² or ω² (preferred, less biased) alongside F to convey the magnitude of the group effect.',
+                'Inspect group means and CIs to characterise the pattern of differences across levels of the factor.',
+              ]
+            : [
+                'A non-significant omnibus F does not rule out differences — verify adequate statistical power.',
+                'Report confidence intervals for group means to support equivalence reasoning if relevant.',
+                'If homogeneity of variance is violated (Levene p < .05), re-run with Welch\'s ANOVA.',
+              ],
+    };
 }
 
 
@@ -566,7 +655,26 @@ export function interpretTwoWayANOVA(params: {
     details.push(`Interaction (${factor1} × ${factor2}): F(${formatNum(dfInteraction, 0)}, ${formatNum(dfError, 0)}) = ${formatNum(interactionF)}, ${formatPValue(interactionP)}.`);
     details.push('Report partial η² (ηₚ²) as the effect size for each effect in a two-way design, as η² is confounded by other effects in the model (Cohen, 1988).');
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: hasInteraction || hasMain1 || hasMain2 ? 'pass' : 'warning',
+        apaStatement: hasInteraction
+            ? `A two-way ANOVA revealed a statistically significant interaction between "${factor1}" and "${factor2}" on "${targetVar}", F(${formatNum(dfInteraction, 0)}, ${formatNum(dfError, 0)}) = ${formatNum(interactionF)}, ${formatPValue(interactionP)}.`
+            : hasMain1 || hasMain2
+                ? `A two-way ANOVA found no significant interaction (p = ${formatPValue(interactionP)}), but significant main effect(s) for ${[hasMain1 ? `"${factor1}"` : null, hasMain2 ? `"${factor2}"` : null].filter(Boolean).join(' and ')} on "${targetVar}".`
+                : `A two-way ANOVA found no statistically significant interaction or main effects for "${factor1}" or "${factor2}" on "${targetVar}".`,
+        recommendations: hasInteraction
+            ? [
+                'Interpret the interaction by conducting simple effects analysis (the effect of each factor at each level of the other).',
+                'Plot the cell means (interaction plot) to visualise the pattern of the interaction.',
+                'Report partial η² for the interaction term as the primary effect size.',
+              ]
+            : [
+                hasMain1 || hasMain2 ? 'Conduct post-hoc comparisons for significant main effects to identify specific group differences.' : 'Verify the study is adequately powered to detect interaction effects (interactions require approximately 4× the sample size of main effects).',
+                'Report partial η² for each main effect for comparability across studies.',
+                'Consider whether the design is balanced — unequal cell sizes can affect Type III SS decomposition.',
+              ],
+    };
 }
 
 
@@ -644,7 +752,24 @@ export function interpretMannWhitney(params: {
         `${effectSize != null ? `, r = ${formatCoef(Math.abs(effectSize))}` : ''}.`
     );
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `A Mann-Whitney U test indicated a statistically significant difference in "${targetVar}" between the ${group1Name} (Mdn = ${formatNum(median1)}) and ${group2Name} (Mdn = ${formatNum(median2)}) groups, U = ${formatNum(statistic, 0)}, ${formatPValue(pValue)}${effectSize != null ? `, r = ${formatCoef(Math.abs(effectSize))}` : ''}.`
+            : `A Mann-Whitney U test found no statistically significant difference in "${targetVar}" between the ${group1Name} and ${group2Name} groups, U = ${formatNum(statistic, 0)}, ${formatPValue(pValue)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                'Report rank-biserial correlation r as the effect size for the Mann-Whitney U test.',
+                'Report group medians and interquartile ranges as descriptive statistics.',
+                'If distributional shapes are not identical between groups, interpret U as a test of stochastic dominance rather than medians.',
+              ]
+            : [
+                'Verify adequate sample size — non-parametric tests have lower power than their parametric equivalents.',
+                'Report medians with IQR for both groups to characterise the direction and magnitude of any observed difference.',
+                'Consider the independent-samples t-test if normality assumptions can be reasonably met.',
+              ],
+    };
 }
 
 
@@ -711,7 +836,24 @@ export function interpretKruskalWallis(params: {
         `APA 7 reporting: H(${df}) = ${formatNum(statistic)}, ${formatPValue(pValue)}.`
     );
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `A Kruskal-Wallis H test revealed a statistically significant difference in "${targetVar}" across groups of "${factorVar}", H(${df}) = ${formatNum(statistic)}, ${formatPValue(pValue)}.`
+            : `A Kruskal-Wallis H test found no statistically significant difference in "${targetVar}" across groups of "${factorVar}", H(${df}) = ${formatNum(statistic)}, ${formatPValue(pValue)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                'Conduct Dunn\'s post-hoc test with Bonferroni or Holm correction to identify which group pairs differ significantly.',
+                'Report ε² (epsilon squared) = H / (N − 1) as the effect size.',
+                'Report median and IQR for each group as the primary descriptive statistics.',
+              ]
+            : [
+                'Verify the study has adequate power to detect group differences with a non-parametric test.',
+                'Report group medians and IQRs to characterise observed (though non-significant) differences.',
+                'Consider whether collapsing or redefining groups might yield a more powerful test.',
+              ],
+    };
 }
 
 
@@ -783,7 +925,24 @@ export function interpretWilcoxonSigned(params: {
         'transparency about the rank distribution (recommended by APA 7).'
     );
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `A Wilcoxon Signed-Rank Test indicated a statistically significant change in "${targetVar}" between the two related measurement occasions, W = ${formatNum(statistic, 0)}, ${formatPValue(pValue)}${effectSize != null ? `, r = ${formatCoef(Math.abs(effectSize))}` : ''}.`
+            : `A Wilcoxon Signed-Rank Test found no statistically significant change in "${targetVar}" between the two measurement occasions, W = ${formatNum(statistic, 0)}, ${formatPValue(pValue)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                'Report effect size r = z / √N alongside the W statistic.',
+                'Report the median difference (pseudo-median of differences) as the primary effect descriptor.',
+                'Report the number of positive, negative, and tied pairs for full APA 7 compliance.',
+              ]
+            : [
+                'Verify the study has adequate power — Wilcoxon has lower power than the paired t-test when normality holds.',
+                'Report the median difference to characterise the magnitude of any observed (non-significant) change.',
+                'Consider the paired-samples t-test if the normality assumption of difference scores can be satisfied.',
+              ],
+    };
 }
 
 
@@ -868,5 +1027,22 @@ export function interpretChiSquare(params: {
         warnings.push(warning);
     }
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: pValue < 0.05 ? 'pass' : 'warning',
+        apaStatement: pValue < 0.05
+            ? `A Pearson chi-square test of independence indicated a statistically significant association between "${var1}" and "${var2}", χ²(${df}${nStr}) = ${formatNum(statistic)}, ${formatPValue(pValue)}, Cramér's V = ${formatCoef(cramersV)}.`
+            : `A Pearson chi-square test of independence found no statistically significant association between "${var1}" and "${var2}", χ²(${df}${nStr}) = ${formatNum(statistic)}, ${formatPValue(pValue)}, V = ${formatCoef(cramersV)}.`,
+        recommendations: pValue < 0.05
+            ? [
+                'Examine the contingency table to identify which cells contribute most to the χ² statistic (largest |observed − expected| cells).',
+                'Report Cramér\'s V as the effect size; for 2×2 tables, phi (φ) is equivalent.',
+                'If expected cell frequencies < 5, use Fisher\'s Exact Test (2×2) or report results cautiously.',
+              ]
+            : [
+                'Verify that expected cell frequency ≥ 5 in ≥ 80% of cells — if not, apply Fisher\'s Exact Test.',
+                'A non-significant χ² does not prove independence; report Cramér\'s V with 95% CI to bound the plausible association strength.',
+                'Consider collapsing low-frequency categories to increase expected cell counts and test power.',
+              ],
+    };
 }

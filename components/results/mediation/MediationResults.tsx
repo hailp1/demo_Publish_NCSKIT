@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FileText, Database, Activity, Target, Share2, ArrowRight } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface MediationResultsProps {
     results: any;
@@ -109,7 +109,7 @@ export const MediationResults = React.memo(function MediationResults({ results, 
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="mediation"
                 results={{
                     pathA: { estimate: results.paths?.a?.est || 0, pValue: results.paths?.a?.p || 1 },

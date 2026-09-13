@@ -3,7 +3,7 @@
 import React from 'react';
 import { FileText, Link, Activity } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface PairedTTestResultsProps {
     results: any;
@@ -92,7 +92,7 @@ export const PairedTTestResults = React.memo(function PairedTTestResults({ resul
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="ttest_paired"
                 results={results}
                 variableNames={{

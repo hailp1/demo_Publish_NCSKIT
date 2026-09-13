@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { CheckCircle, AlertTriangle, AlertCircle, TrendingUp } from 'lucide-react';
 
 interface VIFResultsProps {
@@ -202,7 +202,7 @@ export const VIFResults = React.memo(function VIFResults({
             </Card>
 
             {/* Template Interpretation */}
-            <TemplateInterpretation
+            <UnifiedASIGInterpretation
                 analysisType="vif"
                 results={results}
             />

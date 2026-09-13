@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Scatter } from 'react-chartjs-2';
 import { FileText, TrendingUp, Info } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '../../../lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { ScientificNote } from '../shared/ScientificNote';
 
 interface RegressionResultsProps {
@@ -171,7 +171,7 @@ export const RegressionResults = React.memo(function RegressionResults({ results
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="regression"
                 results={displayResults}
                 variableNames={{

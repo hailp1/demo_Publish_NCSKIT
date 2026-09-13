@@ -406,5 +406,34 @@ export function interpretPLSSEM(params: {
                 : ''}`;
     }
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: hasViolations ? 'fail' : hasAnyData ? 'pass' : 'warning',
+        apaStatement: hasViolations
+            ? `PLS-SEM assessment identified measurement model violations. Resolve issues in ${[
+                ave && Object.values(ave).some(v => v < 0.50) ? 'AVE (< .50)' : null,
+                compositeReliability && Object.values(compositeReliability).some(v => v < 0.70) ? 'CR (< .70)' : null,
+                htmt && Object.keys(htmt).some(c1 => Object.keys(htmt).some(c2 => c1 < c2 && ((htmt[c1]?.[c2] ?? htmt[c2]?.[c1]) ?? 0) >= 0.90)) ? 'HTMT (≥ .90)' : null,
+              ].filter(Boolean).join(', ')} before interpreting structural paths (Hair et al., 2017).`
+            : `PLS-SEM measurement model assessment confirms all criteria are satisfied: convergent validity (AVE ≥ .50), internal consistency (ρC ≥ .70), and discriminant validity (Fornell-Larcker / HTMT) (Hair et al., 2017).`,
+        recommendations: hasViolations
+            ? [
+                ave && Object.values(ave).some(v => v < 0.50)
+                    ? 'Improve AVE by removing low-loading items (λ < .40) or reconceptualising the construct.'
+                    : null,
+                htmt && Object.keys(htmt).some(c1 => Object.keys(htmt).some(c2 => c1 < c2 && ((htmt[c1]?.[c2] ?? htmt[c2]?.[c1]) ?? 0) >= 0.90))
+                    ? 'Address HTMT violations by examining cross-loadings, reassigning items, or merging highly similar constructs.'
+                    : null,
+                'Re-run the measurement model assessment after revisions before proceeding to structural model interpretation.',
+              ].filter((r): r is string => r !== null)
+            : [
+                pathCoefficients && pathCoefficients.length > 0
+                    ? 'Report bootstrapped path coefficients with 95% CI (≥ 5,000 resamples) — CIs excluding zero indicate significance.'
+                    : 'Run PLS bootstrapping (≥ 5,000 resamples) to obtain significance tests for path coefficients.',
+                r_squared
+                    ? 'Report Q² predictive relevance (blindfolding) alongside R² to assess out-of-sample predictive accuracy.'
+                    : 'Assess R² for all endogenous constructs: weak ≥ .25, moderate ≥ .50, substantial ≥ .75 (Hair et al., 2017).',
+                'Report f² effect sizes for each path to supplement the significance test with practical magnitude assessment.',
+              ],
+    };
 }

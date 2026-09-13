@@ -2,8 +2,6 @@
 
 import React, { useMemo, lazy, Suspense, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { AIInterpretation } from './AIInterpretation';
-import { TemplateInterpretation } from './TemplateInterpretation';
 import SEMPathDiagram from './SEMPathDiagram';
 import { Maximize2, Minimize2 } from 'lucide-react';
 
@@ -255,9 +253,6 @@ export function ResultsDisplay({
             {results?.rCode && (
                 <RSyntaxViewer code={results.rCode} userProfile={userProfile} />
             )}
-
-            {/* AI Interpretation (Optional Premium - requires API key) */}
-            <AIInterpretation analysisType={analysisType} results={results} userProfile={userProfile} />
         </div>
     );
 }

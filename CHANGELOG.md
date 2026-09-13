@@ -1,27 +1,62 @@
-# Changelog & System State Updates
+# Changelog
 
-This document tracks the major structural changes, architectural decisions, and current state of the ncsStat system. It serves as a historical reference for future maintenance.
+All notable changes to NCSKit are documented in this file.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2026-09-08] - System Architecture & Security Refactoring
+---
 
-### Current System State
-* **Analysis Engine (`app/analyze`)**: The core analytical interface has been fully decoupled from the God Object anti-pattern. The massive 1500+ line `page.tsx` was broken down into highly modular, reusable, and testable components:
-  * `app/analyze/hooks/useAnalyzeLifecycle.ts`: Manages session validation, aggressive cache-busting, offline listeners, and auth logic.
-  * `app/analyze/hooks/useAnalysisRunner.ts`: Encapsulates the WebR processing and atomic credit deduction logic.
-  * `app/analyze/components/AnalyzeStepRenderer.tsx`: Handles dynamic routing for over 18 statistical view modes.
-  * *Impact*: `page.tsx` size was reduced from ~82.4 KB to ~15.1 KB. `npm run type-check` compiles with 0 errors.
+## [0.1.0] - 2026-09-13
 
-* **Admin Role-Based Access Control (RBAC)**: The `/admin` routes have been heavily secured.
-  * Client-side protection has been completely removed in favor of **Server Components**.
-  * `app/admin/layout.tsx` is now a Server Component that uses `createServerClient` to fetch sessions before rendering HTML. Unauthorized users receive an immediate HTTP 307 Redirect.
-  * `utils/supabase/middleware.ts` was updated with a metadata fallback (`user.user_metadata?.role` & `user.app_metadata?.role`) to ensure admins are not locked out if the `profiles` table experiences RLS failures.
-  * Interactive Sidebar UI was extracted to `app/admin/components/AdminSidebar.tsx` (Client Component).
+### Added
+- **UnifiedASIGInterpretation component** (`components/results/shared/UnifiedASIGInterpretation.tsx`):
+  Merges the former `TemplateInterpretation` (auto-fire ASIG widget) and
+  `AIInterpretation` (button-triggered AI widget) into a single rich panel.
+  Features: verdict badge (pass / warning / fail), APA statement copy box,
+  expandable technical details, collapsible warnings, numbered recommendations,
+  and collapsible citations. Auto-fires via `useEffect` on mount.
+- **ASIG interpreter enrichment**: all 19 interpreters across `lib/asig/basic.ts`,
+  `factor.ts`, `regression.ts`, `pls-sem.ts`, and `generator.ts` now return
+  three new optional fields on `InterpretationResult`:
+  - `verdict`: `'pass' | 'warning' | 'fail'` — computed from the primary test metric.
+  - `apaStatement`: a single manuscript-ready APA 7 sentence for direct copy-paste.
+  - `recommendations`: 2–3 concrete next-step bullet points.
+- **Null-safety fixes**: `KruskalWallisResults`, `ChiSquareResults`,
+  `SEMPathDiagram`, `ResearchModelDiagram`, `MGAResults`, `BootstrapResults`,
+  `ANOVAResults` — all `.toFixed()` calls now guarded against `null`/`undefined`.
+- **Result component wiring**: `ResultsDisplay.tsx` now lazy-loads and renders
+  `BootstrapResults`, `BlindFoldingResults`, `MGAResults`, `IPMAResults`,
+  `HTMTResults`, `VIFResults`, `OutlierResults`, and `OmegaDetailResults`.
+- **PLSSEMView**: replaced placeholder stubs with full UI blocks for Bootstrap,
+  Blindfolding, MGA, and IPMA sub-analyses.
+- **PLSResults**: added Outer Loadings table (Hair et al., 2017 thresholds) and
+  f² Effect Size table (Cohen, 1988 benchmarks).
 
-* **Repository Maintenance**:
-  * Removed over 25MB of unnecessary Git bloat (including `.tgz` R packages and large text tree files).
-  * The CI workflow (`.github/workflows/ci.yml`) was temporarily dropped as it interfered with the strict WebR environment configurations.
+### Changed
+- `TemplateInterpretation` replaced with `UnifiedASIGInterpretation` across all
+  23 result components; `AIInterpretation` removed from `ResultsDisplay.tsx`.
+- `InterpretationResult` type in `lib/asig/shared.ts` extended with
+  `verdict?`, `apaStatement?`, `recommendations?` (all optional — fully
+  backward-compatible).
+- README: removed incorrect claims (psych as active runtime dep, IDBFS offline
+  capable); fixed R version in architecture diagram (4.4.x); corrected
+  architecture diagram; updated Acknowledgements.
+- CITATION.cff: synced title and affiliation to match `paper.md` exactly.
 
-### Outstanding Tasks (Next Steps)
-1. Write 14 Test Scenarios for the `Auto Test Engine` (`components/admin/AdminAutoTest.tsx`).
-2. Integrate WebR Deep Test routines.
-3. Enhance the `AutoPilotView.tsx` with deeper LLM (Gemini 2.0 Flash) interpretations.
+### Fixed
+- Admin RBAC architecture refactored to Server Components with HTTP 307 redirect.
+- `page.tsx` (analyze) reduced from ~82 KB to ~15 KB via hook extraction.
+
+---
+
+## [2026-09-08] - Architecture & Security Refactoring (pre-versioning)
+
+### Changed
+- **Analysis Engine (`app/analyze`)**: decoupled from God Object anti-pattern.
+  `page.tsx` broken into `useAnalyzeLifecycle.ts`, `useAnalysisRunner.ts`,
+  and `AnalyzeStepRenderer.tsx`. Page size: ~82 KB → ~15 KB.
+- **Admin RBAC**: client-side protection replaced with Server Components.
+  `app/admin/layout.tsx` is now a Server Component; unauthorised users receive
+  HTTP 307 Redirect before HTML renders.
+- **Repository maintenance**: removed ~25 MB of Git bloat (`.tgz` R packages,
+  large tree files).

@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FileText, Layers, Activity } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { ScientificNote } from '../shared/ScientificNote';
 
 interface CorrelationResultsProps {
@@ -108,7 +108,7 @@ export const CorrelationResults = React.memo(function CorrelationResults({ resul
 
             {/* Professional Template Interpretation for the primary relationship */}
             {columns.length >= 2 && (
-                <TemplateInterpretation 
+                <UnifiedASIGInterpretation 
                     analysisType="correlation"
                     results={{
                         r: matrix[0][1],

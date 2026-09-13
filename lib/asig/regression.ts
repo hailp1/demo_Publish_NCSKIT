@@ -151,7 +151,30 @@ export function interpretLinearRegression(params: {
         `and β (standardized) for comparing relative predictor importance within the model.`
     );
 
-    return { summary, details, warnings, citations };
+    const sigPredictors = coefficients.filter(c => c.term !== '(Intercept)' && c.pValue < 0.05);
+
+    return {
+        summary, details, warnings, citations,
+        verdict: modelSig ? 'pass' : 'warning',
+        apaStatement: modelSig
+            ? `Multiple linear regression significantly predicted "${dependentVar}", F(${formatNum(nPred, 0)}, ${dfDenom}) = ${formatNum(fStatistic)}, ${formatPValue(fPValue)}, R² = ${formatCoef(rSquared)}, adjusted R² = ${formatCoef(adjRSquared)}. ${sigPredictors.length > 0 ? `Significant predictors: ${sigPredictors.map(c => `${c.term} (β = ${formatCoef(c.stdBeta)}, ${formatPValue(c.pValue)})`).join(', ')}.` : ''}`
+            : `The regression model did not significantly predict "${dependentVar}", F(${formatNum(nPred, 0)}, ${dfDenom}) = ${formatNum(fStatistic)}, ${formatPValue(fPValue)}, adjusted R² = ${formatCoef(adjRSquared)}.`,
+        recommendations: modelSig
+            ? [
+                sigPredictors.length > 0
+                    ? `Focus interpretation on significant predictors (${sigPredictors.map(c => c.term).join(', ')}); report standardised β for relative importance comparison.`
+                    : 'Report adjusted R² rather than R² to account for model complexity.',
+                'Report 95% CIs for all unstandardised B coefficients for replication purposes.',
+                coefficients.some(c => c.vif != null && c.vif >= 5)
+                    ? 'Multicollinearity detected — consider ridge regression or removing redundant predictors.'
+                    : 'Check residual plots (fitted vs. residuals, Q-Q plot) to verify linearity and homoscedasticity assumptions.',
+              ]
+            : [
+                'The model is non-significant — evaluate whether the predictors are theoretically appropriate for this outcome.',
+                'Increase sample size or reconsider the predictor set based on prior literature.',
+                'Consider a hierarchical regression approach to assess whether adding predictors improves model fit.',
+              ],
+    };
 }
 
 
@@ -253,7 +276,21 @@ export function interpretLogisticRegression(params: {
         `${auc != null ? `, AUC = ${formatCoef(auc)}` : ''}.`
     );
 
-    return { summary, details, warnings, citations };
+    const logisticVerdict = pseudoR2 >= 0.10 && accuracy >= 0.70 ? 'pass' : pseudoR2 >= 0.05 ? 'warning' : 'fail';
+    const sigLogPreds = coefficients.filter(c => c.term !== '(Intercept)' && c.pValue < 0.05);
+
+    return {
+        summary, details, warnings, citations,
+        verdict: logisticVerdict,
+        apaStatement: `Binary logistic regression predicting "${dependentVar}" yielded McFadden pseudo-R² = ${formatCoef(pseudoR2)}, accuracy = ${formatPct(accuracy)}${auc != null ? `, AUC = ${formatCoef(auc)}` : ''}. ${sigLogPreds.length > 0 ? `Significant predictors: ${sigLogPreds.map(c => `${c.term} (OR = ${formatNum(c.oddsRatio)}, ${formatPValue(c.pValue)})`).join(', ')}.` : ''}`,
+        recommendations: [
+            'Report OR with 95% CI for all predictors — CIs are more informative than p-values alone for logistic models.',
+            auc != null && auc < 0.70
+                ? `AUC = ${formatCoef(auc)} indicates weak discrimination — consider adding theoretically motivated predictors.`
+                : 'Evaluate model calibration using the Hosmer-Lemeshow goodness-of-fit test.',
+            'For imbalanced outcomes, report sensitivity, specificity, and the F1-score in addition to overall accuracy.',
+        ],
+    };
 }
 
 
@@ -383,7 +420,28 @@ export function interpretMediation(params: {
         'Causal inference requires time precedence, covariation, and ruling out third-variable explanations.'
     );
 
-    return { summary, details, warnings, citations };
+    const medVerdict = mediationType !== 'none' && (bootstrapCI ? (bootstrapCI.lower > 0 || bootstrapCI.upper < 0) : sobelP < 0.05) ? 'pass' : 'warning';
+
+    return {
+        summary, details, warnings, citations,
+        verdict: medVerdict,
+        apaStatement: mediationType === 'full'
+            ? `Full mediation: the indirect effect of "${xVar}" on "${yVar}" through "${mVar}" was statistically significant (a × b = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}), and the direct effect was non-significant (c′ = ${formatCoef(pathCprime.estimate)}, ${formatPValue(pathCprime.pValue)}).`
+            : mediationType === 'partial'
+                ? `Partial mediation: "${mVar}" significantly mediated the "${xVar}" → "${yVar}" relationship (indirect effect = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}); the direct effect remained significant (c′ = ${formatCoef(pathCprime.estimate)}, ${formatPValue(pathCprime.pValue)}).`
+                : `No significant mediation was found for the "${xVar}" → "${mVar}" → "${yVar}" pathway (indirect effect = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}).`,
+        recommendations: mediationType !== 'none'
+            ? [
+                'Use Hayes\' PROCESS macro (Model 4) or lavaan in R for standardised indirect effect reporting with bootstrap CIs.',
+                'Report the proportion of mediation (indirect / total effect) as a supplementary effect size index.',
+                'Acknowledge that mediation cannot establish causality — longitudinal or experimental designs are required for causal claims.',
+              ]
+            : [
+                'A non-significant indirect effect may reflect insufficient power — bootstrap CIs for indirect effects require larger N than direct effects.',
+                'Consider testing alternative mediators grounded in the theoretical model.',
+                'Report the bootstrap CI for the indirect effect even when non-significant, to convey the bounds on the plausible effect.',
+              ],
+    };
 }
 
 
@@ -477,7 +535,24 @@ export function interpretModeration(params: {
         );
     }
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: interactionP < 0.05 ? 'pass' : 'warning',
+        apaStatement: interactionP < 0.05
+            ? `Moderation analysis revealed a statistically significant interaction between "${xVar}" and "${mVar}" predicting "${yVar}", B = ${formatCoef(interactionEstimate)}, ${formatPValue(interactionP)}${r2Change != null ? `, ΔR² = ${formatCoef(r2Change)}` : ''}.`
+            : `The interaction between "${xVar}" and "${mVar}" predicting "${yVar}" was not statistically significant, B = ${formatCoef(interactionEstimate)}, ${formatPValue(interactionP)}.`,
+        recommendations: interactionP < 0.05
+            ? [
+                'Conduct simple slopes analysis at ±1 SD (and mean) of the moderator to characterise the interaction pattern.',
+                'Create an interaction plot (predicted Y values across levels of X at different levels of W) for manuscript presentation.',
+                'Report ΔR² as the primary effect size for the moderation effect (Cohen et al., 2003).',
+              ]
+            : [
+                'Mean-center X and W before computing the interaction term to reduce non-essential multicollinearity.',
+                'Verify the model is adequately powered — interactions typically require 4× the N of main effects for equivalent power.',
+                'Report ΔR² and its 90% CI for the interaction term even when non-significant.',
+              ],
+    };
 }
 
 
@@ -583,5 +658,18 @@ export function interpretClusterAnalysis(params: {
         `${silhouetteScore != null ? `, silhouette = ${formatCoef(silhouetteScore)}` : ''}.`
     );
 
-    return { summary, details, warnings, citations };
+    const clusterVerdict = varianceExplained >= 0.50 && (silhouetteScore == null || silhouetteScore >= 0.25) ? 'pass' : 'warning';
+
+    return {
+        summary, details, warnings, citations,
+        verdict: clusterVerdict,
+        apaStatement: `${method} cluster analysis identified ${nClusters} cluster${nClusters !== 1 ? 's' : ''}, accounting for ${(varianceExplained * 100).toFixed(1)}% of total variance between clusters${silhouetteScore != null ? ` (silhouette = ${formatCoef(silhouetteScore)})` : ''}.`,
+        recommendations: [
+            varianceExplained < 0.50
+                ? `Between-cluster variance (${(varianceExplained * 100).toFixed(1)}%) is below 50% — try k = ${nClusters + 1} and k = ${Math.max(2, nClusters - 1)} and compare using the elbow criterion and silhouette width.`
+                : 'Validate the cluster solution by profiling clusters on theoretically meaningful external variables.',
+            'Standardise all clustering variables (z-scores) before analysis to prevent scale-sensitive distortions.',
+            'Run k-means with multiple random starts (≥ 25) and select the solution with the lowest total within-cluster SS.',
+        ],
+    };
 }

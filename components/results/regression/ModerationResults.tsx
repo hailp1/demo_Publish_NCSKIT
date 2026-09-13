@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FileText, Database, Activity, Target, Share2 } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface ModerationResultsProps {
     results: any;
@@ -108,7 +108,7 @@ export const ModerationResults = React.memo(function ModerationResults({ results
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="moderation"
                 results={results}
                 variableNames={{

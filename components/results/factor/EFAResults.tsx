@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { TrendingUp, FileText, CheckCircle2, LayoutGrid, Info, ShieldCheck } from 'lucide-react';
 
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { ScientificNote } from '../shared/ScientificNote';
 
 interface EFAResultsProps {
@@ -175,7 +175,7 @@ export const EFAResults = React.memo(function EFAResults({ results, columns, onP
             )}
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="efa"
                 results={efaData}
             />

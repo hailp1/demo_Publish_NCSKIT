@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 interface HTMTResultsProps {
@@ -155,7 +155,7 @@ export const HTMTResults = React.memo(function HTMTResults({
             </Card>
 
             {/* Template Interpretation */}
-            <TemplateInterpretation
+            <UnifiedASIGInterpretation
                 analysisType="htmt"
                 results={results}
             />

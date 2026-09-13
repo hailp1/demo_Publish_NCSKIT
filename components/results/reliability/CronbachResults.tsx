@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
 import React, { useMemo, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { TrendingUp, Activity, CheckCircle2, ChevronRight, FileText } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '../../../lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { ScientificNote } from '../shared/ScientificNote';
 
 interface CronbachResultsProps {
@@ -105,7 +105,7 @@ export const CronbachResults = React.memo(function CronbachResults({
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Scale Mean if Item Deleted</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Scale Variance if Item Deleted</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right bg-blue-100/30">Corrected Item-Total Correlation</th>
-                                    <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Cronbach&apos;s α if Item Deleted</th>
+                                    <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Cronbach&apos;s a if Item Deleted</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-blue-50">
@@ -136,7 +136,7 @@ export const CronbachResults = React.memo(function CronbachResults({
             )}
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType={isOmega ? 'omega' : 'cronbach'}
                 results={results}
                 scaleName={scaleName}

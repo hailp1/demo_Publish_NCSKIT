@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FileText, Database, BarChart3, TrendingUp, Hash, Activity } from 'lucide-react';
 import { getStoredLocale, t, type Locale } from '@/lib/i18n';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface DescriptiveResultsProps {
     results: any;
@@ -109,7 +109,7 @@ export const DescriptiveResults = React.memo(function DescriptiveResults({ resul
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="descriptive"
                 results={{ ...results, columnNames: columns }}
             />

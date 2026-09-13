@@ -1,5 +1,5 @@
 {
-  "name": "ncsstat",
+  "name": "ncskit",
   "version": "0.1.0",
   "description": "NCSKit — Serverless, WebAssembly-powered statistical analysis with automated APA interpretation (ASIG engine)",
   "private": true,

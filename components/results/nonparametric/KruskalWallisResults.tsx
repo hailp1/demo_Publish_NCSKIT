@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Database, FileText, Activity, Info, BarChart } from 'lucide-react';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface KruskalWallisResultsProps {
     results: any;
@@ -93,7 +93,7 @@ export const KruskalWallisResults = React.memo(function KruskalWallisResults({ r
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="kruskal_wallis"
                 results={results}
                 variableNames={variableNames}

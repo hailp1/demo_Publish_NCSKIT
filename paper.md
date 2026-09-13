@@ -244,13 +244,13 @@ pipeline:
 
 The deterministic design means ASIG output can be reproduced exactly from any
 given numeric input — a property that generative AI tools cannot guarantee.
-The current engine supports **20 analysis types**: descriptive statistics,
+The current engine supports **22 analysis types**: descriptive statistics,
 Pearson/Spearman/Kendall correlation, independent and paired t-tests,
 one-way and two-way ANOVA, Mann-Whitney U, Kruskal-Wallis H, Wilcoxon
-Signed-Rank, chi-square (Pearson), EFA, CFA, linear regression, logistic
-regression, mediation, moderation, cluster analysis, PLS-SEM
-(Fornell-Larcker, HTMT, path coefficients), VIF diagnostics, and
-multivariate outlier detection.
+Signed-Rank, chi-square (Pearson), EFA, CFA, CB-SEM (via `lavaan`), linear
+regression, logistic regression, mediation, moderation, cluster analysis,
+PLS-SEM (Fornell-Larcker, HTMT, path coefficients), VIF diagnostics,
+multivariate outlier detection, and standalone HTMT discriminant validity.
 For multi-variable correlation matrices, the engine generates one
 interpretation per variable pair; the matrix display component renders the
 full pairwise table, with each cell's significance level cross-referenced to
@@ -277,6 +277,35 @@ function evaluateFornellLarcker(
 }
 ```
 
+### Unified Interpretation Output
+
+Each ASIG interpreter now returns five structured fields on `InterpretationResult`:
+
+- **`summary`**: APA 7 prose paragraph with full methodological context and citations.
+- **`details`**: Itemised technical metrics (effect sizes, fit indices, assumption checks).
+- **`warnings`**: Threshold violations or assumption failures requiring researcher attention.
+- **`citations`**: APA-formatted reference list for all thresholds cited in the output.
+- **`verdict`** / **`apaStatement`** / **`recommendations`**: A pass/warning/fail badge,
+  a single manuscript-ready APA sentence for copy-paste, and 2–3 actionable next steps.
+
+This enriched output is rendered by the `UnifiedASIGInterpretation` component — a
+single panel that replaces the former separate "Template Interpretation" and
+"AI Interpretation" widgets — providing researchers with an at-a-glance quality
+signal, a directly citable sentence, and concrete guidance on next steps.
+
+### Limitations and Scope
+
+ASIG templates cover the 22 pre-specified analysis types most commonly encountered
+in social science and management research. The engine does not adapt to non-standard
+model configurations, multi-level models, or analyses outside its registered type set.
+Interpretation thresholds follow the most widely cited psychometric and SEM conventions
+[@hu1999cutoff; @hair2017pls; @nunnally1978]; researchers in disciplines with
+different reporting norms (e.g., clinical epidemiology, econometrics) should consult
+domain-specific guidelines before relying on ASIG prose verbatim. Output is currently
+in English only. The system cannot evaluate the substantive appropriateness of a
+statistical method for a given research question — methodological judgment remains
+the researcher's responsibility.
+
 # Performance Benchmarks
 
 ## Numerical Accuracy
@@ -284,8 +313,10 @@ function evaluateFornellLarcker(
 To verify that the WebAssembly R binary maintains floating-point parity with
 native R, `NCSKit` was tested against R 4.4.2 (macOS/x86_64) using the
 standard `lavaan` Political Democracy dataset with Maximum Likelihood
-estimation. All fit indices and factor loadings are identical to five decimal
-places (see `BENCHMARK.md` in the repository):
+estimation. Fit indices (CFI, TLI, RMSEA, SRMR) are identical to at least 3
+decimal places (Δ = 0.000 in the table below); individual parameter estimates
+(factor loadings, path coefficients) agree to 5 decimal places (Δ < 0.00001).
+See `BENCHMARK.md` in the repository for the complete listing:
 
 | Index | Native R 4.4.2 | NCSKit (WebR/WASM) | $\Delta$ |
 |:---|---:|---:|---:|

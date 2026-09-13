@@ -77,14 +77,20 @@ export type AnalysisType =
 /**
  * Standardised return type for every ASIG interpreter.
  *
- * - summary   : One-paragraph APA-style prose interpretation.
- * - details   : Bullet-level breakdown of individual statistics.
- * - warnings  : Assumption violations or caveats requiring researcher attention.
- * - citations : Inline APA 7 references supporting the decision thresholds used.
+ * - summary         : One-paragraph APA-style prose interpretation.
+ * - details         : Bullet-level breakdown of individual statistics.
+ * - warnings        : Assumption violations or caveats requiring researcher attention.
+ * - citations       : Inline APA 7 references supporting the decision thresholds used.
+ * - verdict         : Overall assessment badge — 'pass' | 'warning' | 'fail'.
+ * - apaStatement    : 1–2 sentences ready to copy directly into a manuscript methods/results section.
+ * - recommendations : Ordered list of concrete next steps for the researcher.
  */
 export interface InterpretationResult {
-    summary:   string;
-    details:   string[];
-    warnings:  string[];
-    citations: string[];
+    summary:          string;
+    details:          string[];
+    warnings:         string[];
+    citations:        string[];
+    verdict?:         'pass' | 'warning' | 'fail';
+    apaStatement?:    string;
+    recommendations?: string[];
 }

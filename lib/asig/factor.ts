@@ -139,7 +139,24 @@ export function interpretCronbachAlpha(params: {
         `${omega != null && !isOmegaPrimary ? `, ω = ${omegaStr}` : ''}.`
     );
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: primaryCoef >= 0.70 ? 'pass' : primaryCoef >= 0.60 ? 'warning' : 'fail',
+        apaStatement: `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ${primaryName} = ${primaryStr}${omega != null && !isOmegaPrimary ? `, ω = ${omegaStr}` : ''}, indicating ${primaryCoef >= 0.90 ? 'excellent' : primaryCoef >= 0.80 ? 'good' : primaryCoef >= 0.70 ? 'adequate' : primaryCoef >= 0.60 ? 'borderline' : 'insufficient'} internal consistency.`,
+        recommendations: primaryCoef >= 0.70
+            ? [
+                'Report both α and ω when both are computed — ω is the preferred index for scales with unequal loadings.',
+                'Include item-total statistics (CITC) in supplementary materials for replication.',
+                badItems && badItems.length > 0
+                    ? `Review items with CITC < .30 (${badItems.join(', ')}) — removing these may improve reliability.`
+                    : 'Examine the corrected item-total correlation (CITC) matrix; items with CITC < .30 should be reviewed.',
+              ]
+            : [
+                'Conduct item analysis: identify and remove items with CITC < .30 to improve reliability.',
+                'Review item wording for ambiguity, double-barrelling, or poor relevance to the construct.',
+                'Consider collecting additional data or piloting revised items before confirmatory analysis.',
+              ],
+    };
 }
 
 
@@ -262,7 +279,22 @@ export function interpretEFA(params: {
         'via CFA before being treated as the definitive measurement model.'
     );
 
-    return { summary, details, warnings, citations };
+    const efaVerdict = kmo >= 0.70 && bartlettP < 0.05 && (totalVariance == null || totalVariance >= 0.50) ? 'pass' : kmo >= 0.60 && bartlettP < 0.05 ? 'warning' : 'fail';
+
+    return {
+        summary, details, warnings, citations,
+        verdict: efaVerdict,
+        apaStatement: `An EFA using ${factorMethod} extraction${rotationMethod ? ` with ${rotationMethod} rotation` : ''} was conducted. KMO = ${formatCoef(kmo)}, Bartlett's ${formatPValue(bartlettP)}. A ${nFactors}-factor solution was retained${totalVariance != null ? `, explaining ${(totalVariance * 100).toFixed(1)}% of total variance` : ''}.`,
+        recommendations: [
+            kmo < 0.70
+                ? 'KMO is below .70 — consider improving items, increasing sample size, or removing items that do not correlate well with the rest.'
+                : 'KMO is satisfactory — proceed with EFA and verify factor solution stability.',
+            `Use parallel analysis (not Kaiser's eigenvalue > 1 criterion) to determine the optimal number of factors to retain.`,
+            totalVariance != null && totalVariance < 0.60
+                ? `Total variance explained (${(totalVariance * 100).toFixed(1)}%) is below 60% — consider retaining an additional factor or expanding the item pool.`
+                : 'Replicate the EFA factor solution in a new sample via CFA before treating it as the definitive measurement model.',
+        ],
+    };
 }
 
 
@@ -394,5 +426,27 @@ export function interpretCFA(params: {
         'the measurement model (Brown, 2015).'
     );
 
-    return { summary, details, warnings, citations };
+    const cfaVerdict = nBad === 0 ? 'pass' : nBad <= 1 ? 'warning' : 'fail';
+    const rmseaCIStr = (rmseaCILower != null && rmseaCIUpper != null)
+        ? ` [90% CI: ${formatCoef(rmseaCILower)}, ${formatCoef(rmseaCIUpper)}]`
+        : '';
+
+    return {
+        summary, details, warnings, citations,
+        verdict: cfaVerdict,
+        apaStatement: `CFA results indicated ${fitVerdict}: CFI = ${formatCoef(cfi)}, TLI = ${formatCoef(tli)}, RMSEA = ${formatCoef(rmsea)}${rmseaCIStr}, SRMR = ${formatCoef(srmr)}, χ²(${df}) = ${formatNum(chi2)}, ${formatPValue(pValue)} (Hu & Bentler, 1999).`,
+        recommendations: nBad === 0
+            ? [
+                'Report all four fit indices (CFI, TLI, RMSEA with 90% CI, SRMR) in the manuscript for comprehensive evaluation.',
+                'Assess convergent validity (AVE ≥ .50) and discriminant validity (HTMT < .85) to complete measurement model evaluation.',
+                'Consider reporting reliability (Cronbach α or McDonald ω) for each factor alongside the CFA fit.',
+              ]
+            : [
+                nBad >= 2
+                    ? 'Multiple fit indices are below threshold — inspect modification indices (MI) for the largest residual covariances and consider theoretically justified model re-specifications.'
+                    : 'One fit index is marginal — examine modification indices for potential item reassignments or correlated residuals within the same scale.',
+                'Cross-validate any re-specified model in an independent sample to prevent overfitting.',
+                'Consider Bayesian SEM or ESEM as alternatives if the simple-structure CFA consistently shows poor fit.',
+              ],
+    };
 }

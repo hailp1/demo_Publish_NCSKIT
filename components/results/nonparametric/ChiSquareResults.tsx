@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Database, FileText, Activity, Info, BarChart } from 'lucide-react';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 
 interface ChiSquareResultsProps {
     results: any;
@@ -125,7 +125,7 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
             </div>
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="chisquare"
                 results={results}
                 variableNames={variableNames}

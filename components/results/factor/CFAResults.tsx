@@ -2,7 +2,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { ScientificNote } from '../shared/ScientificNote';
 
 interface CFAResultsProps {
@@ -176,7 +176,7 @@ export const CFAResults = React.memo(function CFAResults({ results, onProceedToS
             )}
 
             {/* Professional Template Interpretation */}
-            <TemplateInterpretation 
+            <UnifiedASIGInterpretation 
                 analysisType="cfa"
                 results={results}
             />

@@ -68,6 +68,9 @@ export function generateInterpretation(
                 details:   [],
                 warnings:  ['This analysis type is not yet supported by the ASIG engine.'],
                 citations: [],
+                verdict:   'warning',
+                apaStatement: `Analysis type "${analysisType}" is not yet supported by the ASIG engine.`,
+                recommendations: ['Contact the development team to request support for this analysis type.'],
             };
     }
 }
@@ -112,7 +115,31 @@ export function interpretVIF(params: {
         }
     });
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: hasSevere ? 'fail' : hasModerate ? 'warning' : 'pass',
+        apaStatement: hasSevere
+            ? `Severe multicollinearity was detected: ${vifValues.filter(v => v >= 10).length} predictor${vifValues.filter(v => v >= 10).length > 1 ? 's' : ''} had VIF ≥ 10, indicating > 90% shared variance with other predictors.`
+            : hasModerate
+                ? `Moderate multicollinearity was detected: ${vifValues.filter(v => v >= threshold && v < 10).length} predictor${vifValues.filter(v => v >= threshold && v < 10).length > 1 ? 's had' : ' had'} VIF ≥ ${threshold}.`
+                : `All predictors had VIF < ${threshold}, indicating no problematic multicollinearity.`,
+        recommendations: hasSevere
+            ? [
+                'Remove or combine the severely collinear predictors (VIF ≥ 10) — their coefficient estimates are unreliable.',
+                'Consider principal component regression or ridge regression to handle severe multicollinearity.',
+                'Check the correlation matrix to identify which predictors are near-redundant.',
+              ]
+            : hasModerate
+                ? [
+                    `Monitor the stability of regression coefficients across model specifications for predictors with VIF ≥ ${threshold}.`,
+                    'Mean-centering predictors or using orthogonal coding can help reduce non-essential multicollinearity.',
+                    'Report tolerance (1/VIF) alongside VIF values for comprehensive collinearity diagnostics.',
+                  ]
+                : [
+                    'No action required — multicollinearity is within acceptable bounds.',
+                    'Proceed with regression analysis; coefficient estimates are stable.',
+                  ],
+    };
 }
 
 
@@ -146,7 +173,20 @@ export function interpretOutlier(params: {
 
     details.push(`Detection method: ${method}, p < .001 criterion (χ² cutoff = ${formatNum(cutoffValue)}).`);
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: nOutliers === 0 ? 'pass' : nOutliers / totalN < 0.05 ? 'warning' : 'fail',
+        apaStatement: nOutliers === 0
+            ? `No multivariate outliers were detected using ${method} (N = ${totalN}, χ² cutoff = ${formatNum(cutoffValue)}).`
+            : `${nOutliers} multivariate outlier${nOutliers > 1 ? 's' : ''} (${((nOutliers / totalN) * 100).toFixed(1)}% of N = ${totalN}) were identified via ${method} (D² > ${formatNum(cutoffValue)}).`,
+        recommendations: nOutliers === 0
+            ? ['Proceed with planned analyses — no influential outliers detected.', 'Verify data entry accuracy as a routine quality check before finalising the dataset.']
+            : [
+                'Examine each flagged observation individually — determine whether it represents a data entry error or a genuine extreme case.',
+                'Run analyses both with and without outliers and report whether conclusions differ (sensitivity analysis).',
+                `${nOutliers / totalN > 0.05 ? 'High outlier rate (> 5%) may indicate data quality issues — review data collection procedures.' : 'Outlier rate is below 5% — sensitivity analysis is sufficient before deciding on exclusions.'}`,
+              ],
+    };
 }
 
 
@@ -191,5 +231,21 @@ export function interpretHTMT(params: {
 
     details.push(`Applied threshold: HTMT < ${formatCoef(threshold)} (strict) or < .90 (liberal; Henseler et al., 2015).`);
 
-    return { summary, details, warnings, citations };
+    return {
+        summary, details, warnings, citations,
+        verdict: violations.length === 0 ? 'pass' : 'fail',
+        apaStatement: violations.length === 0
+            ? `HTMT-based discriminant validity was confirmed: all construct pairs had HTMT < ${formatCoef(threshold)} (Henseler et al., 2015).`
+            : `HTMT discriminant validity was violated for ${violations.length} pair${violations.length > 1 ? 's' : ''}: ${violations.join('; ')}.`,
+        recommendations: violations.length === 0
+            ? [
+                'Discriminant validity is confirmed — proceed with structural model interpretation.',
+                'Report HTMT values in a correlation matrix table for transparency.',
+              ]
+            : [
+                'Examine cross-loadings for the violating construct pairs to identify poorly discriminating items.',
+                'Consider merging constructs that are conceptually and empirically similar (HTMT ≥ .90).',
+                'Obtain bootstrap CIs for HTMT values — if the upper bound exceeds .90, the violation is statistically significant.',
+              ],
+    };
 }

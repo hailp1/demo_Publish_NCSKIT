@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
 
 interface OutlierResultsProps {
@@ -180,7 +180,7 @@ export const OutlierResults = React.memo(function OutlierResults({
             </Card>
 
             {/* Template Interpretation */}
-            <TemplateInterpretation
+            <UnifiedASIGInterpretation
                 analysisType="outlier"
                 results={results}
             />

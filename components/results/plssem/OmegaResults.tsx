@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TemplateInterpretation } from '@/components/TemplateInterpretation';
+import { UnifiedASIGInterpretation } from '@/components/results/shared/UnifiedASIGInterpretation';
 import { CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 interface OmegaResultsProps {
@@ -132,7 +132,7 @@ export const OmegaResults = React.memo(function OmegaResults({
             )}
 
             {/* Template Interpretation */}
-            <TemplateInterpretation
+            <UnifiedASIGInterpretation
                 analysisType="omega"
                 results={results}
                 scaleName={scaleName}
