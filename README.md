@@ -25,8 +25,8 @@ publication-ready, APA 7th Edition narrative interpretations across 22 analysis
 types. Unlike LLM-based tools, ASIG output is fully reproducible — identical
 numeric input always produces identical prose.
 
-**Live deployment:** [https://ncskit.org](https://ncskit.org)
-**Demo (no login required):** [https://ncskit.org/demo](https://ncskit.org/demo)
+**Live deployment:** [https://open.ncskit.org](https://open.ncskit.org)
+**Demo (no login required):** [https://open.ncskit.org/demo](https://open.ncskit.org/demo)
 
 ---
 

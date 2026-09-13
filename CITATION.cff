@@ -8,7 +8,7 @@ authors:
 title: "NCSKit: A Serverless, WebAssembly-Powered Statistical Analysis Platform with Automated APA Interpretation"
 version: 0.1.0
 date-released: 2026-09-13
-url: "https://ncskit.org"
+url: "https://open.ncskit.org"
 repository-code: "https://github.com/hailp1/ncskit"
 license: MIT
 abstract: >-

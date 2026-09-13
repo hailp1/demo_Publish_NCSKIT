@@ -6,6 +6,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.1.1] - 2026-09-13
+
+### Fixed
+- **Middleware crash (`MIDDLEWARE_INVOCATION_FAILED`)**: Added top-level
+  `try/catch` around the entire middleware function so any unhandled error
+  from `updateSession` (Supabase timeout, missing env var, network issue)
+  falls through gracefully with `NextResponse.next()` instead of returning
+  a 500 to the user.
+- **Domain redirect**: Updated `REDIRECT_HOSTS` list in middleware to redirect
+  `ncskit.org`, `www.ncskit.org`, `stat.ncskit.org`, `ncsstat.ncskit.org`
+  all to the canonical domain `open.ncskit.org`.
+- **ASIG analysisType aliases**: All result components now correctly map to
+  their ASIG interpreters (`wilcoxon` → `wilcoxon_signed`, `chisquare` →
+  `chi_square`, `regression` → `linear_regression`, `logistic` →
+  `logistic_regression`, `cronbach`/`omega` → `cronbach_alpha`).
+- **TypeScript errors (0)**: Fixed `runBlindfolding`, `runMGA` optional params;
+  removed stray `columns` arg from `runIPMA`; removed non-existent `columns`
+  prop from `HTMTResults`.
+- **Rate-limit 429 error**: `UnifiedASIGInterpretation` now calls
+  `generateInterpretation()` directly client-side instead of via
+  `/api/template-interpret`, eliminating the 10 req/min rate limit entirely.
+
+### Changed
+- Canonical domain updated to `open.ncskit.org` across README, paper.md,
+  CITATION.cff, and `.env.example`.
+- Extended WASM file exclusions in middleware matcher (added `.ico`, `.ttf`,
+  `.woff`, `.woff2`).
+
+---
+
 ## [0.1.0] - 2026-09-13
 
 ### Added

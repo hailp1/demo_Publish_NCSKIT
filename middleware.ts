@@ -1,53 +1,72 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
-import { logger } from '@/utils/logger'
+
+// Canonical production domain
+const PRIMARY_DOMAIN = 'open.ncskit.org'
+
+// All subdomains/aliases that should redirect to the primary domain
+const REDIRECT_HOSTS = [
+    'ncskit.org',
+    'www.ncskit.org',
+    'stat.ncskit.org',
+    'ncsstat.ncskit.org',
+    'demo_publish_ncskit.vercel.app',
+]
 
 export async function middleware(request: NextRequest) {
-    const url = request.nextUrl.clone()
-    const host = request.headers.get('host') || ''
-    const forwardedProto = request.headers.get('x-forwarded-proto')
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-    
-    // 1. FORCE HTTPS: Core security - secure cookies won't be sent over HTTP
-    if (isProduction && forwardedProto === 'http') {
-        url.protocol = 'https:'
-        return NextResponse.redirect(url, { status: 301 })
-    }
+    try {
+        const url = request.nextUrl.clone()
+        const host = request.headers.get('host') || ''
+        const forwardedProto = request.headers.get('x-forwarded-proto')
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
 
-    // 2. FORCE PRIMARY DOMAIN: Avoid PKCE/Cookie mismatch
-    if (host.includes('stat.ncskit.org') || host.includes('ncsstat.ncskit.org')) {
-        console.log(`[Middleware] Redirecting from ${host} to ncskit.org`)
-        url.hostname = 'ncskit.org'
-        url.protocol = 'https:'
-        url.port = '' // Ensure port is stripped in production
-        return NextResponse.redirect(url, { status: 301 })
-    }
+        // 1. FORCE HTTPS
+        if (isProduction && forwardedProto === 'http') {
+            url.protocol = 'https:'
+            return NextResponse.redirect(url, { status: 301 })
+        }
 
+        // 2. REDIRECT ALIASES → PRIMARY DOMAIN (open.ncskit.org)
+        const shouldRedirect = REDIRECT_HOSTS.some(h => host.includes(h))
+        if (isProduction && shouldRedirect) {
+            url.hostname = PRIMARY_DOMAIN
+            url.protocol = 'https:'
+            url.port = ''
+            return NextResponse.redirect(url, { status: 301 })
+        }
 
-    // Skip session update for static assets
-    if (request.nextUrl.pathname.startsWith('/_next') || request.nextUrl.pathname.includes('.')) {
+        // 3. Skip session update for static assets
+        const pathname = request.nextUrl.pathname
+        if (pathname.startsWith('/_next') || pathname.includes('.')) {
+            return NextResponse.next()
+        }
+
+        // 4. Skip session processing when OAuth code is present
+        if (request.nextUrl.searchParams.has('code')) {
+            return NextResponse.next()
+        }
+
+        // 5. Session management (Supabase auth + RBAC)
+        return await updateSession(request)
+
+    } catch (err) {
+        // Never crash the middleware — fall through to the app so it can handle
+        // its own error states. Logging here would require Edge-compatible logger.
+        console.error('[Middleware] Unhandled error, falling through:', err)
         return NextResponse.next()
     }
-
-    // CRITICAL: Skip ALL session processing when an OAuth code is present.
-    // The middleware's getUser() call destroys the PKCE code_verifier cookie
-    // before the client-side can use it for exchangeCodeForSession().
-    if (request.nextUrl.searchParams.has('code')) {
-        return NextResponse.next()
-    }
-
-    return await updateSession(request)
 }
 
 export const config = {
     matcher: [
         /*
-         * Match all request paths except for the ones starting with:
+         * Match all request paths except for:
          * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - public files (files in public folder including images)
+         * - _next/image (image optimization)
+         * - favicon.ico
+         * - WebR WASM files (large binaries served from public/)
+         * - Static image/font assets
          */
-        '/((?!_next/static|_next/image|favicon.ico|webr_core_v3|webr_repo_v6|.*\\.(?:svg|png|jpg|jpeg|gif|webp|wasm|rds|gz)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|webr_core_v3|webr_repo_v6|.*\\.(?:svg|png|jpg|jpeg|gif|webp|wasm|rds|gz|ico|ttf|woff|woff2)$).*)',
     ],
 }
