@@ -12,12 +12,30 @@
 // ─── APA FORMATTING UTILITIES ────────────────────────────────────────────────
 
 /**
+ * Safely coerce any value to a finite number.
+ * Returns fallback (default 0) for undefined, null, NaN, Infinity.
+ */
+function toFinite(val: unknown, fallback = 0): number {
+    const n = Number(val);
+    return isFinite(n) ? n : fallback;
+}
+
+/**
+ * Public alias — use in interpreters to safely coerce incoming params.
+ * e.g.  const pValue = safeNum(params.pValue, 1);
+ */
+export function safeNum(val: unknown, fallback = 0): number {
+    return toFinite(val, fallback);
+}
+
+/**
  * Format a p-value per APA 7 style.
  * Values < .001 are reported as "p < .001"; all others as exact "p = .xxx".
  */
-export function formatPValue(p: number): string {
-    if (p < 0.001) return 'p < .001';
-    const rounded = p.toFixed(3).replace('0.', '.');
+export function formatPValue(p: unknown): string {
+    const n = toFinite(p, 1);
+    if (n < 0.001) return 'p < .001';
+    const rounded = n.toFixed(3).replace('0.', '.');
     return `p = ${rounded}`;
 }
 
@@ -25,27 +43,28 @@ export function formatPValue(p: number): string {
  * Format coefficients bounded in (−1, 1): drop the leading zero.
  * e.g., 0.847 → ".85",  −0.312 → "−.31"
  */
-export function formatCoef(val: number, decimals = 2): string {
-    if (Math.abs(val) < 1) {
-        const str = val.toFixed(decimals);
+export function formatCoef(val: unknown, decimals = 2): string {
+    const n = toFinite(val);
+    if (Math.abs(n) < 1) {
+        const str = n.toFixed(decimals);
         return str.replace('0.', '.').replace('-0.', '−.');
     }
-    return val.toFixed(decimals);
+    return n.toFixed(decimals);
 }
 
 /**
  * Format regular numbers with a leading zero (counts, F, χ², etc.).
  */
-export function formatNum(val: number, decimals = 2): string {
-    return val.toFixed(decimals);
+export function formatNum(val: unknown, decimals = 2): string {
+    return toFinite(val).toFixed(decimals);
 }
 
 /**
  * Render a percentage string from a proportion (0–1).
  * e.g., 0.3412 → "34.1%"
  */
-export function formatPct(proportion: number, decimals = 1): string {
-    return `${(proportion * 100).toFixed(decimals)}%`;
+export function formatPct(proportion: unknown, decimals = 1): string {
+    return `${(toFinite(proportion) * 100).toFixed(decimals)}%`;
 }
 
 // ─── TYPE DEFINITIONS ─────────────────────────────────────────────────────────

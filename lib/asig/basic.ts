@@ -11,7 +11,7 @@
  *   - Methodological context with primary citations
  */
 
-import { formatPValue, formatCoef, formatNum, formatPct, InterpretationResult } from './shared';
+import { formatPValue, formatCoef, formatNum, formatPct, safeNum, InterpretationResult } from './shared';
 
 
 // ─── DESCRIPTIVE STATISTICS ───────────────────────────────────────────────────
@@ -37,8 +37,8 @@ export function interpretDescriptive(params: {
     const nonNormal: string[] = [];
 
     columnNames.forEach((name, i) => {
-        const skew = skews[i];
-        const kurt = kurtoses[i];
+        const skew = safeNum(skews[i]);
+        const kurt = safeNum(kurtoses[i]);
         // West et al. (1995): |skew| < 2 and |excess kurtosis| < 7 are acceptable for most SEM/regression
         const skewOk = Math.abs(skew) <= 2;
         const kurtOk = Math.abs(kurt) <= 7;   // excess kurtosis convention
@@ -107,7 +107,9 @@ export function interpretCorrelation(params: {
     n?:      number;
     method?: 'pearson' | 'spearman' | 'kendall';
 }): InterpretationResult {
-    const { var1, var2, r, pValue, n, method = 'pearson' } = params;
+    const { var1, var2, n, method = 'pearson' } = params;
+    const r      = safeNum(params.r);
+    const pValue = safeNum(params.pValue, 1);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -218,9 +220,16 @@ export function interpretTTestIndependent(params: {
 }): InterpretationResult {
     const {
         groupVar, targetVar, group1Name, group2Name,
-        mean1, sd1, mean2, sd2, t, df, pValue,
-        cohensD, leveneP, shapiroP1, shapiroP2
+        leveneP, shapiroP1, shapiroP2
     } = params;
+    const mean1    = safeNum(params.mean1);
+    const sd1      = safeNum(params.sd1);
+    const mean2    = safeNum(params.mean2);
+    const sd2      = safeNum(params.sd2);
+    const t        = safeNum(params.t);
+    const df       = safeNum(params.df);
+    const pValue   = safeNum(params.pValue, 1);
+    const cohensD  = params.cohensD != null ? safeNum(params.cohensD) : params.cohensD;
 
     const isWelch = leveneP != null && leveneP < 0.05;
     const testName = isWelch ? "Welch's t-test" : 'an independent-samples t-test';
@@ -352,10 +361,16 @@ export function interpretTTestPaired(params: {
     cohensD?:       number;
     normalityDiffP?: number;
 }): InterpretationResult {
-    const {
-        targetVar, meanBefore, sdBefore, meanAfter, sdAfter,
-        meanDiff, t, df, pValue, cohensD, normalityDiffP
-    } = params;
+    const { targetVar, normalityDiffP } = params;
+    const meanBefore = safeNum(params.meanBefore);
+    const sdBefore   = safeNum(params.sdBefore);
+    const meanAfter  = safeNum(params.meanAfter);
+    const sdAfter    = safeNum(params.sdAfter);
+    const meanDiff   = safeNum(params.meanDiff);
+    const t          = safeNum(params.t);
+    const df         = safeNum(params.df);
+    const pValue     = safeNum(params.pValue, 1);
+    const cohensD    = params.cohensD != null ? safeNum(params.cohensD) : params.cohensD;
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -455,9 +470,13 @@ export function interpretANOVA(params: {
     postHoc?:         { comparison: string; diff: number; pAdj: number }[];
 }): InterpretationResult {
     const {
-        factorVar, targetVar, F, dfBetween, dfWithin, pValue,
-        etaSquared, methodUsed, leveneP, normalityResidP, postHoc
+        factorVar, targetVar, methodUsed, leveneP, normalityResidP, postHoc
     } = params;
+    const F           = safeNum(params.F);
+    const dfBetween   = safeNum(params.dfBetween);
+    const dfWithin    = safeNum(params.dfWithin);
+    const pValue      = safeNum(params.pValue, 1);
+    const etaSquared  = params.etaSquared != null ? safeNum(params.etaSquared) : params.etaSquared;
 
     const isWelch = methodUsed?.toLowerCase().includes('welch') ?? false;
 
@@ -585,13 +604,16 @@ export function interpretTwoWayANOVA(params: {
     df2:           number;
     dfError:       number;
 }): InterpretationResult {
-    const {
-        factor1, factor2, targetVar,
-        mainEffect1F, mainEffect1P,
-        mainEffect2F, mainEffect2P,
-        interactionF, interactionP,
-        df1, df2, dfError
-    } = params;
+    const { factor1, factor2, targetVar } = params;
+    const mainEffect1F = safeNum(params.mainEffect1F);
+    const mainEffect1P = safeNum(params.mainEffect1P, 1);
+    const mainEffect2F = safeNum(params.mainEffect2F);
+    const mainEffect2P = safeNum(params.mainEffect2P, 1);
+    const interactionF = safeNum(params.interactionF);
+    const interactionP = safeNum(params.interactionP, 1);
+    const df1          = safeNum(params.df1);
+    const df2          = safeNum(params.df2);
+    const dfError      = safeNum(params.dfError);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -691,7 +713,12 @@ export function interpretMannWhitney(params: {
     effectSize?:    number;
     distShapeRun?:  string;
 }): InterpretationResult {
-    const { group1Name, group2Name, targetVar, statistic, pValue, median1, median2, effectSize, distShapeRun } = params;
+    const { group1Name, group2Name, targetVar, distShapeRun } = params;
+    const statistic   = safeNum(params.statistic);
+    const pValue      = safeNum(params.pValue, 1);
+    const median1     = safeNum(params.median1);
+    const median2     = safeNum(params.median2);
+    const effectSize  = params.effectSize != null ? safeNum(params.effectSize) : params.effectSize;
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -784,7 +811,10 @@ export function interpretKruskalWallis(params: {
     medians:     number[];
     groupNames?: string[];
 }): InterpretationResult {
-    const { factorVar, targetVar, statistic, df, pValue, medians, groupNames } = params;
+    const { factorVar, targetVar, medians, groupNames } = params;
+    const statistic = safeNum(params.statistic);
+    const df        = safeNum(params.df);
+    const pValue    = safeNum(params.pValue, 1);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -866,7 +896,11 @@ export function interpretWilcoxonSigned(params: {
     medianDiff:  number;
     effectSize?: number;
 }): InterpretationResult {
-    const { targetVar, statistic, pValue, medianDiff, effectSize } = params;
+    const { targetVar } = params;
+    const statistic   = safeNum(params.statistic);
+    const pValue      = safeNum(params.pValue, 1);
+    const medianDiff  = safeNum(params.medianDiff);
+    const effectSize  = params.effectSize != null ? safeNum(params.effectSize) : params.effectSize;
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -959,7 +993,11 @@ export function interpretChiSquare(params: {
     warning?:      string;
     n?:            number;
 }): InterpretationResult {
-    const { var1, var2, statistic, df, pValue, cramersV, fisherPValue, warning, n } = params;
+    const { var1, var2, fisherPValue, warning, n } = params;
+    const statistic = safeNum(params.statistic);
+    const df        = safeNum(params.df);
+    const pValue    = safeNum(params.pValue, 1);
+    const cramersV  = safeNum(params.cramersV);
 
     const details:   string[] = [];
     const warnings:  string[] = [];

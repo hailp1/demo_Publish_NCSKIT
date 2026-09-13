@@ -2,12 +2,9 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
-import UserMenu from '@/components/UserMenu'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
-import { NcsBalanceBadge } from '@/components/NcsBalanceBadge'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { getStoredLocale, setStoredLocale, t, type Locale } from '@/lib/i18n'
-import { useAuth } from '@/context/AuthContext'
 import { ChevronDown, BarChart3, Layout, BookOpen, GraduationCap, Microscope, FileText, Network, Brain, Menu, X, ClipboardCheck } from 'lucide-react'
 
 interface HeaderProps {
@@ -22,11 +19,7 @@ function HeaderContent({ centerContent, rightActions, hideNav = false, user: pro
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const mode = searchParams.get('mode')
-    const { user: authUser, profile: authProfile, loading } = useAuth()
 
-    // Use auth context if loaded, otherwise fallback to props to reduce flicker
-    const user = authUser || propUser;
-    const profile = authProfile || propProfile;
     const [locale, setLocale] = useState<Locale>('vi')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const isVi = locale === 'vi'
@@ -160,13 +153,10 @@ function HeaderContent({ centerContent, rightActions, hideNav = false, user: pro
 
                     <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
 
-                    {user ? (
-                        <UserMenu user={user} profile={propProfile || authProfile} />
-                    ) : (
-                        <Link href="/login" className="hidden sm:block px-5 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-all shadow-sm">
-                            {t(locale, 'nav.login')}
-                        </Link>
-                    )}
+                    {/* Open demo badge */}
+                    <span className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
+                        Open Demo
+                    </span>
 
                     {/* Mobile Menu Toggle */}
                     <button 
@@ -235,16 +225,6 @@ function HeaderContent({ centerContent, rightActions, hideNav = false, user: pro
                             {t(locale, 'nav.knowledge_hub')}
                         </Link>
                     </div>
-                    
-                    {!user && (
-                        <Link 
-                            href="/login" 
-                            className="flex items-center justify-center w-full p-4 rounded-xl bg-slate-900 text-white font-black uppercase text-xs tracking-widest mt-4"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            {t(locale, 'nav.login')}
-                        </Link>
-                    )}
                     
                     <div className="flex items-center justify-between pt-4">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ngôn ngữ / Language</span>

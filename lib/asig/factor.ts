@@ -6,7 +6,7 @@
  * Outputs publication-ready narrative for psychometric and factor-analytic results.
  */
 
-import { formatPValue, formatCoef, formatNum, formatPct, InterpretationResult } from './shared';
+import { formatPValue, formatCoef, formatNum, formatPct, safeNum, InterpretationResult } from './shared';
 
 
 // ─── RELIABILITY ANALYSIS (Cronbach α / McDonald's ω) ────────────────────────
@@ -19,7 +19,9 @@ export function interpretCronbachAlpha(params: {
     badItems?:       string[];
     isOmegaPrimary?: boolean;
 }): InterpretationResult {
-    const { scaleName, nItems, alpha, omega, badItems, isOmegaPrimary } = params;
+    const { scaleName, nItems, badItems, isOmegaPrimary } = params;
+    const alpha  = safeNum(params.alpha);
+    const omega  = params.omega != null ? safeNum(params.omega) : params.omega;
 
     const primaryCoef = isOmegaPrimary && omega != null ? omega : alpha;
     const primaryStr  = formatCoef(primaryCoef);
@@ -171,7 +173,11 @@ export function interpretEFA(params: {
     totalVariance?:  number;
     communalities?:  { item: string; value: number }[];
 }): InterpretationResult {
-    const { kmo, bartlettP, nFactors, factorMethod, rotationMethod, totalVariance, communalities } = params;
+    const { factorMethod, rotationMethod, communalities } = params;
+    const kmo           = safeNum(params.kmo);
+    const bartlettP     = safeNum(params.bartlettP, 1);
+    const nFactors      = safeNum(params.nFactors, 1);
+    const totalVariance = params.totalVariance != null ? safeNum(params.totalVariance) : params.totalVariance;
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -311,7 +317,14 @@ export function interpretCFA(params: {
     rmseaCIUpper?:  number;
     srmr:           number;
 }): InterpretationResult {
-    const { chi2, df, pValue, cfi, tli, rmsea, rmseaCILower, rmseaCIUpper, srmr } = params;
+    const { rmseaCILower, rmseaCIUpper } = params;
+    const chi2   = safeNum(params.chi2);
+    const df     = safeNum(params.df);
+    const pValue = safeNum(params.pValue, 1);
+    const cfi    = safeNum(params.cfi);
+    const tli    = safeNum(params.tli);
+    const rmsea  = safeNum(params.rmsea);
+    const srmr   = safeNum(params.srmr);
 
     const details:   string[] = [];
     const warnings:  string[] = [];

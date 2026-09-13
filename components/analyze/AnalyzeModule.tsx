@@ -2,7 +2,6 @@
 
 import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import { useAnalysisSession } from '@/hooks/useAnalysisSession';
 import { Toast } from '@/components/ui/Toast';
 import { Shield } from 'lucide-react';
@@ -12,7 +11,6 @@ import AnalysisToolbar from '@/components/analyze/AnalysisToolbar';
 import SaveProjectModal from '@/components/analyze/SaveProjectModal';
 import { DemographicSurvey } from '@/components/feedback/DemographicSurvey';
 import { ApplicabilitySurvey } from '@/components/feedback/ApplicabilitySurvey';
-import { InsufficientCreditsModal } from '@/components/InsufficientCreditsModal';
 import { t } from '@/lib/i18n';
 import { AnalysisStep } from '@/types/analysis';
 
@@ -29,11 +27,10 @@ interface AnalyzeModuleProps {
 export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
     const searchParams = useSearchParams();
     const mode = searchParams.get('mode');
-    const { user } = useAuth();
-    
-    const effectiveUser = isDemo ? null : user;
 
-    // Session State Management (Global Context for Analysis)
+    // Demo mode: no user, no credits
+    const effectiveUser = null;
+
     const {
         isPrivateMode, setIsPrivateMode,
         clearSession,
@@ -46,25 +43,17 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
         multipleResults, setMultipleResults,
     } = useAnalysisSession();
 
-    // Local Ephemeral UI State
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [showDemographics, setShowDemographics] = useState(false);
     const [showApplicability, setShowApplicability] = useState(false);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [previousAnalysis, setPreviousAnalysis] = useState<any | null>(null);
 
-    // NCS Credit State
-    const [ncsBalance, setNcsBalance] = useState<number>(0);
-    const [showInsufficientCredits, setShowInsufficientCredits] = useState(false);
-    const [requiredCredits, setRequiredCredits] = useState(0);
-    const [currentAnalysisCost, setCurrentAnalysisCost] = useState(0);
-
     const showToast = (message: string, type: 'success' | 'error' | 'info') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 5000);
     };
 
-    // 1. Lifecycle Hook (Handles CacheBuster, Auth, Locale, Auto-save, Event Listeners)
     const {
         loading,
         showRestoreBanner,
@@ -74,23 +63,23 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
         getNumericColumns
     } = useAnalyzeLifecycle({
         data, step, setStep, profile, setProfile, filename, results, analysisType, isPrivateMode,
-        setNcsBalance, setToast: showToast, setShowDemographics, isDemo
+        setNcsBalance: () => {}, setToast: showToast, setShowDemographics, isDemo
     });
 
     const getAllColumns = () => profile ? Object.keys(profile.columnStats) : [];
 
-    // 2. Analysis Runner Hook (Handles WebR, Credit deduction, Error handling)
     const { isAnalyzing, setIsAnalyzing, analysisProgress, runAnalysis } = useAnalysisRunner({
-        data, getNumericColumns, user: effectiveUser, setStep, setAnalysisType, setRequiredCredits, setCurrentAnalysisCost,
-        setShowInsufficientCredits, setNcsBalance, setResults, setToast: showToast,
+        data, getNumericColumns, user: effectiveUser, setStep, setAnalysisType,
+        setRequiredCredits: () => {}, setCurrentAnalysisCost: () => {},
+        setShowInsufficientCredits: () => {}, setNcsBalance: () => {},
+        setResults, setToast: showToast,
         handleAnalysisError: (err: any) => {
             const msg = err.message || String(err);
-            console.error("Analysis Error:", err);
+            console.error('Analysis Error:', err);
             showToast(`Lỗi: ${msg.substring(0, 100)}...`, 'error');
         }
     });
 
-    // 3. Tab Visibility Warning
     const isVisible = usePageVisibility();
     React.useEffect(() => {
         if (!isVisible && isAnalyzing) {
@@ -109,23 +98,15 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
         );
     }
 
-    const steps = [
-        { id: 'upload', label: t(locale as any, 'analyze.steps.upload') },
-        { id: 'profile', label: t(locale as any, 'analyze.steps.profile') },
-        { id: 'analyze', label: t(locale as any, 'analyze.steps.analyze') },
-        { id: 'results', label: t(locale as any, 'analyze.steps.results') },
-    ];
-
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
             <Header />
-            
-            {isDemo && (
-                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-2 text-sm font-bold shadow-md relative z-50 flex items-center justify-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    BẠN ĐANG TRẢI NGHIỆM PHIÊN BẢN DEMO (KHÔNG YÊU CẦU ĐĂNG NHẬP). GIỚI HẠN UPLOAD: TỐI ĐA 300 DÒNG, 50 CỘT.
-                </div>
-            )}
+
+            {/* Open-access banner */}
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-center py-2 text-sm font-bold shadow-md relative z-50 flex items-center justify-center gap-2">
+                <Shield className="w-4 h-4" />
+                OPEN DEMO — Không yêu cầu đăng nhập. Giới hạn: tối đa 300 dòng, 50 cột.
+            </div>
 
             {/* Restore Workspace Banner */}
             {showRestoreBanner && (
@@ -135,17 +116,12 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
                             <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
                                 <Shield className="w-4 h-4 text-amber-600" />
                             </div>
-                            <div>
-                                <p className="text-sm font-medium text-amber-900">
-                                    {t(locale as any, 'analyze.common.restore_found') || 'Tìm thấy dữ liệu đang làm việc'}
-                                </p>
-                            </div>
+                            <p className="text-sm font-medium text-amber-900">
+                                {t(locale as any, 'analyze.common.restore_found') || 'Tìm thấy dữ liệu đang làm việc'}
+                            </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={discardSaved}
-                                className="px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-md transition-colors"
-                            >
+                            <button onClick={discardSaved} className="px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-md transition-colors">
                                 {t(locale as any, 'analyze.common.discard') || 'Bỏ qua'}
                             </button>
                             <button
@@ -238,7 +214,6 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
                         })}
                     </div>
 
-                    {/* Step Content Rendered Here */}
                     <div className="py-8">
                         <AnalyzeStepRenderer
                             step={step}
@@ -253,7 +228,7 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
                             setMultipleResults={setMultipleResults}
                             analysisType={analysisType}
                             previousAnalysis={previousAnalysis}
-                            ncsBalance={ncsBalance}
+                            ncsBalance={0}
                             mode={mode}
                             getNumericColumns={getNumericColumns}
                             getAllColumns={getAllColumns}
@@ -266,12 +241,12 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
                             setStep={setStep}
                             runAnalysis={runAnalysis}
                             setResults={setResults}
-                            setNcsBalance={setNcsBalance}
+                            setNcsBalance={() => {}}
                             showToast={showToast}
                             setAnalysisType={setAnalysisType}
-                            setRequiredCredits={setRequiredCredits}
-                            setCurrentAnalysisCost={setCurrentAnalysisCost}
-                            setShowInsufficientCredits={setShowInsufficientCredits}
+                            setRequiredCredits={() => {}}
+                            setCurrentAnalysisCost={() => {}}
+                            setShowInsufficientCredits={() => {}}
                             setPreviousAnalysis={setPreviousAnalysis}
                             isDemo={isDemo}
                         />
@@ -281,7 +256,6 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
 
             <Footer />
 
-            {/* Modals & Overlays */}
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             <SaveProjectModal
@@ -294,21 +268,13 @@ export function AnalyzeModule({ isDemo = false }: AnalyzeModuleProps) {
                 locale={locale as any}
             />
 
-            <InsufficientCreditsModal
-                isOpen={showInsufficientCredits}
-                onClose={() => setShowInsufficientCredits(false)}
-                required={requiredCredits}
-                available={ncsBalance}
-                analysisType={analysisType}
-            />
-
             {showDemographics && (
                 <DemographicSurvey
                     isOpen={showDemographics}
                     onComplete={() => setShowDemographics(false)}
                 />
             )}
-            
+
             {showApplicability && (
                 <ApplicabilitySurvey
                     isOpen={showApplicability}

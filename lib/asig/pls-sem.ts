@@ -8,7 +8,7 @@
  * Primary references: Hair et al. (2017, 2021); Henseler et al. (2015).
  */
 
-import { InterpretationResult, formatCoef, formatNum, formatPValue } from './shared';
+import { InterpretationResult, formatCoef, formatNum, formatPValue, safeNum } from './shared';
 
 
 export function interpretPLSSEM(params: {

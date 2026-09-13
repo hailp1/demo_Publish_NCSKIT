@@ -6,7 +6,7 @@
  * All prose conforms to APA 7th Edition reporting standards.
  */
 
-import { formatPValue, formatCoef, formatNum, formatPct, InterpretationResult } from './shared';
+import { formatPValue, formatCoef, formatNum, formatPct, safeNum, InterpretationResult } from './shared';
 
 
 // ─── LINEAR REGRESSION ───────────────────────────────────────────────────────
@@ -28,10 +28,11 @@ export function interpretLinearRegression(params: {
     normalityP?:   number;
     durbinWatson?: number;
 }): InterpretationResult {
-    const {
-        dependentVar, rSquared, adjRSquared, fStatistic, fPValue,
-        dfResidual, coefficients, normalityP, durbinWatson
-    } = params;
+    const { dependentVar, dfResidual, coefficients, normalityP, durbinWatson } = params;
+    const rSquared    = safeNum(params.rSquared);
+    const adjRSquared = safeNum(params.adjRSquared);
+    const fStatistic  = safeNum(params.fStatistic);
+    const fPValue     = safeNum(params.fPValue, 1);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -194,7 +195,9 @@ export function interpretLogisticRegression(params: {
         pValue:     number;
     }[];
 }): InterpretationResult {
-    const { dependentVar, pseudoR2, accuracy, auc, coefficients } = params;
+    const { dependentVar, auc, coefficients } = params;
+    const pseudoR2 = safeNum(params.pseudoR2);
+    const accuracy = safeNum(params.accuracy);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -313,9 +316,17 @@ export function interpretMediation(params: {
     const {
         xVar, mVar, yVar,
         pathA, pathB, pathC, pathCprime,
-        indirectEffect, sobelZ, sobelP,
         bootstrapCI, mediationType
     } = params;
+    const indirectEffect = safeNum(params.indirectEffect);
+    const sobelZ         = safeNum(params.sobelZ);
+    const sobelP         = safeNum(params.sobelP, 1);
+
+    // Normalize path objects
+    const safePathA      = { estimate: safeNum(pathA?.estimate), pValue: safeNum(pathA?.pValue, 1) };
+    const safePathB      = { estimate: safeNum(pathB?.estimate), pValue: safeNum(pathB?.pValue, 1) };
+    const safePathC      = { estimate: safeNum(pathC?.estimate), pValue: safeNum(pathC?.pValue, 1) };
+    const safePathCprime = { estimate: safeNum(pathCprime?.estimate), pValue: safeNum(pathCprime?.pValue, 1) };
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -328,22 +339,22 @@ export function interpretMediation(params: {
 
     // Path details with APA notation
     details.push(
-        `Path a (${xVar} → ${mVar}): B = ${formatCoef(pathA.estimate)}, ` +
-        `${formatPValue(pathA.pValue)}` +
-        `${pathA.pValue < 0.05 ? ' ✓ significant' : ' — not significant'}.`
+        `Path a (${xVar} → ${mVar}): B = ${formatCoef(safePathA.estimate)}, ` +
+        `${formatPValue(safePathA.pValue)}` +
+        `${safePathA.pValue < 0.05 ? ' ✓ significant' : ' — not significant'}.`
     );
     details.push(
-        `Path b (${mVar} → ${yVar} | ${xVar}): B = ${formatCoef(pathB.estimate)}, ` +
-        `${formatPValue(pathB.pValue)}` +
-        `${pathB.pValue < 0.05 ? ' ✓ significant' : ' — not significant'}.`
+        `Path b (${mVar} → ${yVar} | ${xVar}): B = ${formatCoef(safePathB.estimate)}, ` +
+        `${formatPValue(safePathB.pValue)}` +
+        `${safePathB.pValue < 0.05 ? ' ✓ significant' : ' — not significant'}.`
     );
     details.push(
-        `Path c — Total effect (${xVar} → ${yVar}): B = ${formatCoef(pathC.estimate)}, ` +
-        `${formatPValue(pathC.pValue)}.`
+        `Path c — Total effect (${xVar} → ${yVar}): B = ${formatCoef(safePathC.estimate)}, ` +
+        `${formatPValue(safePathC.pValue)}.`
     );
     details.push(
-        `Path c′ — Direct effect (${xVar} → ${yVar} | ${mVar}): B = ${formatCoef(pathCprime.estimate)}, ` +
-        `${formatPValue(pathCprime.pValue)}.`
+        `Path c′ — Direct effect (${xVar} → ${yVar} | ${mVar}): B = ${formatCoef(safePathCprime.estimate)}, ` +
+        `${formatPValue(safePathCprime.pValue)}.`
     );
     details.push(`Indirect effect (a × b) = ${formatCoef(indirectEffect)}.`);
 
@@ -371,11 +382,11 @@ export function interpretMediation(params: {
         summary =
             `Mediation analysis indicated that "${mVar}" fully mediated the ` +
             `relationship between "${xVar}" and "${yVar}." ` +
-            `Path a (${xVar} → ${mVar}: B = ${formatCoef(pathA.estimate)}, ${formatPValue(pathA.pValue)}) ` +
-            `and path b (${mVar} → ${yVar}: B = ${formatCoef(pathB.estimate)}, ${formatPValue(pathB.pValue)}) ` +
+            `Path a (${xVar} → ${mVar}: B = ${formatCoef(safePathA.estimate)}, ${formatPValue(safePathA.pValue)}) ` +
+            `and path b (${mVar} → ${yVar}: B = ${formatCoef(safePathB.estimate)}, ${formatPValue(safePathB.pValue)}) ` +
             `were both statistically significant, while the direct effect of "${xVar}" on "${yVar}" ` +
             `was substantially reduced and non-significant after controlling for the mediator ` +
-            `(c′ = ${formatCoef(pathCprime.estimate)}, ${formatPValue(pathCprime.pValue)}). ` +
+            `(c′ = ${formatCoef(safePathCprime.estimate)}, ${formatPValue(safePathCprime.pValue)}). ` +
             `The indirect effect (a × b = ${formatCoef(indirectEffect)}) was statistically significant` +
             `${bootstrapCI
                 ? `, as confirmed by bootstrap confidence intervals ` +
@@ -388,7 +399,7 @@ export function interpretMediation(params: {
             `relationship between "${xVar}" and "${yVar}." ` +
             `Both the indirect effect (a × b = ${formatCoef(indirectEffect)}) ` +
             `and the direct effect of "${xVar}" on "${yVar}" ` +
-            `(c′ = ${formatCoef(pathCprime.estimate)}, ${formatPValue(pathCprime.pValue)}) ` +
+            `(c′ = ${formatCoef(safePathCprime.estimate)}, ${formatPValue(safePathCprime.pValue)}) ` +
             `remained statistically significant after introducing the mediator into the model, ` +
             `consistent with partial mediation. ` +
             `${bootstrapCI
@@ -406,7 +417,7 @@ export function interpretMediation(params: {
                   `indicating that the mediated pathway was not statistically significant.`
                 : `The Sobel test was not significant (Z = ${formatNum(sobelZ)}, ${formatPValue(sobelP)}).`} ` +
             `The total effect of "${xVar}" on "${yVar}" ` +
-            `(B = ${formatCoef(pathC.estimate)}, ${formatPValue(pathC.pValue)}) ` +
+            `(B = ${formatCoef(safePathC.estimate)}, ${formatPValue(safePathC.pValue)}) ` +
             `should be interpreted in the absence of demonstrated mediation.`;
     }
 
@@ -426,9 +437,9 @@ export function interpretMediation(params: {
         summary, details, warnings, citations,
         verdict: medVerdict,
         apaStatement: mediationType === 'full'
-            ? `Full mediation: the indirect effect of "${xVar}" on "${yVar}" through "${mVar}" was statistically significant (a × b = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}), and the direct effect was non-significant (c′ = ${formatCoef(pathCprime.estimate)}, ${formatPValue(pathCprime.pValue)}).`
+            ? `Full mediation: the indirect effect of "${xVar}" on "${yVar}" through "${mVar}" was statistically significant (a × b = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}), and the direct effect was non-significant (c′ = ${formatCoef(safePathCprime.estimate)}, ${formatPValue(safePathCprime.pValue)}).`
             : mediationType === 'partial'
-                ? `Partial mediation: "${mVar}" significantly mediated the "${xVar}" → "${yVar}" relationship (indirect effect = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}); the direct effect remained significant (c′ = ${formatCoef(pathCprime.estimate)}, ${formatPValue(pathCprime.pValue)}).`
+                ? `Partial mediation: "${mVar}" significantly mediated the "${xVar}" → "${yVar}" relationship (indirect effect = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}); the direct effect remained significant (c′ = ${formatCoef(safePathCprime.estimate)}, ${formatPValue(safePathCprime.pValue)}).`
                 : `No significant mediation was found for the "${xVar}" → "${mVar}" → "${yVar}" pathway (indirect effect = ${formatCoef(indirectEffect)}${bootstrapCI ? `, 95% CI [${formatCoef(bootstrapCI.lower)}, ${formatCoef(bootstrapCI.upper)}]` : ''}).`,
         recommendations: mediationType !== 'none'
             ? [
@@ -460,9 +471,10 @@ export function interpretModeration(params: {
 }): InterpretationResult {
     const {
         xVar, mVar, yVar,
-        interactionTerm, interactionEstimate, interactionP,
-        r2Change, r2ChangeP, simpleSlopes
+        interactionTerm, r2Change, r2ChangeP, simpleSlopes
     } = params;
+    const interactionEstimate = safeNum(params.interactionEstimate);
+    const interactionP        = safeNum(params.interactionP, 1);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -567,7 +579,11 @@ export function interpretClusterAnalysis(params: {
     silhouetteScore?: number;
     clusterSizes?:    number[];
 }): InterpretationResult {
-    const { method, nClusters, totalSS, withinSS, betweenSS, silhouetteScore, clusterSizes } = params;
+    const { method, silhouetteScore, clusterSizes } = params;
+    const nClusters      = safeNum(params.nClusters, 1);
+    const totalSS        = safeNum(params.totalSS);
+    const withinSS       = safeNum(params.withinSS);
+    const betweenSS      = safeNum(params.betweenSS);
 
     const varianceExplained = totalSS > 0 ? betweenSS / totalSS : 0;
 

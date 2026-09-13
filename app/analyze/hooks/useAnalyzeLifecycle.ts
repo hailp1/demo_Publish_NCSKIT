@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import { getStoredLocale, t } from '@/lib/i18n';
 import { initWebR, getWebRStatus, setProgressCallback } from '@/lib/webr-wrapper';
 import { FeedbackService } from '@/lib/feedback-service';
@@ -25,8 +23,6 @@ export function useAnalyzeLifecycle({
     setShowDemographics,
     isDemo = false
 }: any) {
-    const router = useRouter();
-    const { user, profile: userProfile, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const [locale, setLocale] = useState('vi');
     const [authTimeout, setAuthTimeout] = useState(false);
@@ -64,33 +60,13 @@ export function useAnalyzeLifecycle({
         }
     }, []);
 
-    // 2. Sync locale & balance
+    // 2. Sync locale only (no balance — no credits in demo)
     useEffect(() => setLocale(getStoredLocale()), []);
+
+    // 3. Auth Guard — REMOVED (demo: always open access)
     useEffect(() => {
-        if (userProfile?.tokens !== undefined) {
-            setNcsBalance(userProfile.tokens);
-        }
-    }, [userProfile?.tokens, setNcsBalance]);
-
-    // 3. Auth Guard
-    useEffect(() => {
-        if (process.env.NODE_ENV === 'development' || isDemo) {
-            setLoading(false);
-            return;
-        }
-
-        const hasCode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code');
-        if (hasCode) return;
-
-        if (!authLoading) {
-            const isSupabaseConfigured = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-            if (user || !isSupabaseConfigured) {
-                setLoading(false);
-            } else {
-                router.push('/login?next=/analyze');
-            }
-        }
-    }, [authLoading, user, router, isDemo]);
+        setLoading(false);
+    }, []);
 
     // 4. Safety Timeout for Auth hangs
     useEffect(() => {

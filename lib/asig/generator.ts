@@ -6,7 +6,7 @@
  * All interpreters return an InterpretationResult with APA 7 prose.
  */
 
-import { AnalysisType, InterpretationResult, formatCoef, formatNum } from './shared';
+import { AnalysisType, InterpretationResult, formatCoef, formatNum, safeNum } from './shared';
 import { interpretCronbachAlpha, interpretEFA, interpretCFA }       from './factor';
 import {
     interpretDescriptive,
@@ -95,7 +95,9 @@ export function interpretVIF(params: {
     variableNames?: string[];
     threshold?:     number;
 }): InterpretationResult {
-    const { vifValues, variableNames, threshold = 5 } = params;
+    const { variableNames, threshold = 5 } = params;
+    // Ensure every VIF value is a finite number
+    const vifValues = (params.vifValues ?? []).map(v => safeNum(v));
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -163,7 +165,10 @@ export function interpretOutlier(params: {
     cutoffValue: number;
     method?:     string;
 }): InterpretationResult {
-    const { nOutliers, totalN, cutoffValue, method = 'Mahalanobis Distance' } = params;
+    const { method = 'Mahalanobis Distance' } = params;
+    const nOutliers   = safeNum(params.nOutliers, 0);
+    const totalN      = safeNum(params.totalN, 1);
+    const cutoffValue = safeNum(params.cutoffValue);
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -210,6 +215,7 @@ export function interpretHTMT(params: {
     threshold?:   number;
 }): InterpretationResult {
     const { htmtMatrix, factorNames, threshold = 0.85 } = params;
+    const safeMatrix = (htmtMatrix ?? []).map(row => (row ?? []).map(v => safeNum(v)));
 
     const details:   string[] = [];
     const warnings:  string[] = [];
@@ -219,9 +225,9 @@ export function interpretHTMT(params: {
 
     const violations: string[] = [];
 
-    for (let i = 0; i < htmtMatrix.length; i++) {
-        for (let j = i + 1; j < htmtMatrix[i].length; j++) {
-            const val = htmtMatrix[i][j];
+    for (let i = 0; i < safeMatrix.length; i++) {
+        for (let j = i + 1; j < safeMatrix[i].length; j++) {
+            const val = safeMatrix[i][j];
             const f1  = factorNames[i] ?? `Factor ${i + 1}`;
             const f2  = factorNames[j] ?? `Factor ${j + 1}`;
 

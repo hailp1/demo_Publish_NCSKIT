@@ -1,10 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { getSupabase } from '@/utils/supabase/client';
-import { getORCIDUser, clearORCIDUser } from '@/utils/cookie-helper';
-import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
-import { logger } from '@/utils/logger';
+/**
+ * AuthContext — Demo stub.
+ * No Supabase, no authentication. Always returns null user so the app
+ * operates in fully open-access mode.
+ */
+
+import React, { createContext, useContext, useMemo } from 'react';
 
 export interface Profile {
     id: string;
@@ -18,11 +20,11 @@ export interface Profile {
 }
 
 interface AuthContextType {
-    user: User | null;
-    profile: Profile | null;
-    loading: boolean;
-    isAdmin: boolean;
-    isOrcidUser: boolean;
+    user: null;
+    profile: null;
+    loading: false;
+    isAdmin: false;
+    isOrcidUser: false;
     refreshProfile: () => Promise<void>;
     signOut: () => Promise<void>;
 }
@@ -30,144 +32,25 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
     user: null,
     profile: null,
-    loading: true,
+    loading: false,
     isAdmin: false,
     isOrcidUser: false,
-    refreshProfile: async () => { },
-    signOut: async () => { },
+    refreshProfile: async () => {},
+    signOut: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const lastUserRef = useRef<string | null>(null);
-    const isFirstRun = useRef(true);
-    const isExchangingCode = useRef(false);
-    const supabase = getSupabase();
-
-    const fetchProfile = useCallback(async (userId: string) => {
-        try {
-            const { data } = await supabase
-                .from('profiles')
-                .select('id, full_name, avatar_url, role, tokens, total_earned, total_spent, organization, academic_level, research_field, orcid_id, last_active')
-                .eq('id', userId)
-                .single();
-            if (data) setProfile(data as Profile);
-        } catch (err) {
-            logger.error('[Auth] Profile fetch fail', err);
-        }
-    }, [supabase]);
-
-    const handleUser = useCallback((sessionUser: User | null) => {
-        const userId = sessionUser?.id || null;
-        if (userId !== lastUserRef.current) {
-            lastUserRef.current = userId;
-            setUser(sessionUser || null);
-            if (userId) {
-                fetchProfile(userId);
-            } else {
-                setProfile(null);
-            }
-        }
-    }, [fetchProfile]);
-
-    useEffect(() => {
-        if (!isFirstRun.current) return;
-        isFirstRun.current = false;
-
-        // SYNCHRONOUS: Detect code BEFORE registering listener (listener fires immediately!)
-        const urlCode = typeof window !== 'undefined'
-            ? new URLSearchParams(window.location.search).get('code')
-            : null;
-        
-        if (urlCode) {
-            isExchangingCode.current = true;
-        }
-
-        const initSession = async () => {
-            try {
-                logger.debug('[Auth] Initiating session restoration...');
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (session?.user) {
-                    logger.debug('[Auth] Session successfully recovered for:', session.user.email);
-                    
-                    // Clear lingering code to prevent redirect guard lock
-                    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code')) {
-                        window.history.replaceState({}, '', window.location.pathname);
-                        isExchangingCode.current = false;
-                    }
-                    
-                    handleUser(session.user);
-                    setLoading(false);
-                } else {
-                    const params = new URLSearchParams(window.location.search);
-                    const code = params.get('code');
-                    
-                    if (code) {
-                        logger.debug('[Auth] OAuth code found, exchanging...');
-                        try {
-                            const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-                            if (!exchangeError && exchangeData.session?.user) {
-                                logger.debug('[Auth] Exchange successful!');
-                                handleUser(exchangeData.session.user);
-                                window.history.replaceState({}, '', window.location.pathname);
-                            } else {
-                                logger.error('[Auth] Exchange failed:', exchangeError);
-                                window.location.href = `/login?error=exchange_failed&err_msg=${encodeURIComponent(exchangeError?.message || 'Unknown error')}`;
-                                return; // Stop execution to let redirect happen
-                            }
-                        } catch (e: any) {
-                            logger.error('[Auth] Exchange exception:', e);
-                            window.location.href = `/login?error=exchange_failed&err_msg=${encodeURIComponent(e?.message || 'Exception during exchange')}`;
-                            return;
-                        }
-                        isExchangingCode.current = false;
-                        setLoading(false);
-                    } else {
-                        // Truly no session and no code
-                        logger.debug('[Auth] No session and no code to exchange.');
-                        setLoading(false);
-                    }
-                }
-            } catch (err) {
-                logger.error('[Auth] Critical auth init failure:', err);
-                setLoading(false);
-            }
-        };
-        
-        initSession();
-
-        // Auth state listener â€” NEVER touch loading while code exchange is in progress
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-            if (isExchangingCode.current) {
-                return; // Code exchange owns the loading state
-            }
-            handleUser(session?.user || null);
-            setLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
-    }, [supabase, handleUser]);
-
-    const signOut = useCallback(async () => {
-        await supabase.auth.signOut();
-        clearORCIDUser();
-        window.location.href = '/login';
-    }, [supabase]);
-
     const value = useMemo(() => ({
-        user,
-        profile,
-        loading,
-        isAdmin: profile?.role === 'admin',
-        isOrcidUser: !!profile?.orcid_id || !!getORCIDUser(),
-        refreshProfile: async () => { if (user) await fetchProfile(user.id); },
-        signOut,
-    }), [user, profile, loading, signOut, fetchProfile]);
+        user: null as null,
+        profile: null as null,
+        loading: false as const,
+        isAdmin: false as const,
+        isOrcidUser: false as const,
+        refreshProfile: async () => {},
+        signOut: async () => {},
+    }), []);
 
     return (
         <AuthContext.Provider value={value}>
@@ -175,4 +58,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         </AuthContext.Provider>
     );
 }
-
