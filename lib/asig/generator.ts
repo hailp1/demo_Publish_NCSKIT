@@ -37,7 +37,10 @@ export function generateInterpretation(
     results: Record<string, any>
 ): InterpretationResult {
     switch (analysisType) {
-        case 'cronbach_alpha':      return interpretCronbachAlpha(results as any);
+        case 'cronbach_alpha':
+        case 'cronbach':
+        case 'omega':
+            return interpretCronbachAlpha(results as any);
         case 'correlation':         return interpretCorrelation(results as any);
         case 'ttest_independent':   return interpretTTestIndependent(results as any);
         case 'ttest_paired':        return interpretTTestPaired(results as any);
@@ -45,12 +48,21 @@ export function generateInterpretation(
         case 'two_way_anova':       return interpretTwoWayANOVA(results as any);
         case 'efa':                 return interpretEFA(results as any);
         case 'cfa':                 return interpretCFA(results as any);
-        case 'linear_regression':   return interpretLinearRegression(results as any);
-        case 'logistic_regression': return interpretLogisticRegression(results as any);
+        case 'linear_regression':
+        case 'regression':
+            return interpretLinearRegression(results as any);
+        case 'logistic_regression':
+        case 'logistic':
+            return interpretLogisticRegression(results as any);
         case 'mann_whitney':        return interpretMannWhitney(results as any);
         case 'kruskal_wallis':      return interpretKruskalWallis(results as any);
-        case 'wilcoxon_signed':     return interpretWilcoxonSigned(results as any);
-        case 'chi_square':          return interpretChiSquare(results as any);
+        case 'wilcoxon_signed':
+        case 'wilcoxon':
+            return interpretWilcoxonSigned(results as any);
+        case 'chi_square':
+        case 'chisquare':
+        case 'chi-square':
+            return interpretChiSquare(results as any);
         case 'mediation':           return interpretMediation(results as any);
         case 'moderation':          return interpretModeration(results as any);
         case 'cluster':             return interpretClusterAnalysis(results as any);
