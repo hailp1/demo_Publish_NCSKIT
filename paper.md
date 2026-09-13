@@ -244,12 +244,13 @@ pipeline:
 
 The deterministic design means ASIG output can be reproduced exactly from any
 given numeric input — a property that generative AI tools cannot guarantee.
-The current engine supports 22 analysis types: descriptive statistics,
+The current engine supports **20 analysis types**: descriptive statistics,
 Pearson/Spearman/Kendall correlation, independent and paired t-tests,
 one-way and two-way ANOVA, Mann-Whitney U, Kruskal-Wallis H, Wilcoxon
-Signed-Rank, chi-square, EFA, CFA, linear regression, logistic regression,
-mediation, moderation, cluster analysis, PLS-SEM (Fornell-Larcker, HTMT,
-path coefficients), VIF diagnostics, and multivariate outlier detection.
+Signed-Rank, chi-square (Pearson), EFA, CFA, linear regression, logistic
+regression, mediation, moderation, cluster analysis, PLS-SEM
+(Fornell-Larcker, HTMT, path coefficients), VIF diagnostics, and
+multivariate outlier detection.
 For multi-variable correlation matrices, the engine generates one
 interpretation per variable pair; the matrix display component renders the
 full pairwise table, with each cell's significance level cross-referenced to
@@ -365,7 +366,7 @@ impact:
   students, and instructors without local installation of any software.
 - **Open instrumentation:** The repository includes a full end-to-end test
   suite (`tests/e2e/`) with a standardised test dataset (`test_data.csv`)
-  covering all 22 supported analysis types, enabling external validation of
+  covering all 20 supported analysis types, enabling external validation of
   all reported numerical results.
 - **Replication package:** The complete source code, R scripts, WASM package
   builds, and ASIG decision-tree logic are publicly available under the MIT

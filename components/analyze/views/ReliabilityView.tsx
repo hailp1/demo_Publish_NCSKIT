@@ -326,7 +326,20 @@ export const ReliabilityView: React.FC<ReliabilityViewProps> = ({
         return (
             <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <ViewHeader title="McDonald's Omega (ω)" subtitle="Đánh giá độ tin cậy hiện đại, chính xác hơn Cronbach Alpha khi các giả định về sự tuân thủ đơn chiều bị vi phạm." icon={Shield} />
-                
+
+                {/* ⚠️ STUB WARNING — McDonald's Omega not yet fully implemented */}
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 flex items-start gap-4">
+                    <div className="shrink-0 w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 font-black text-lg">⚠️</div>
+                    <div>
+                        <p className="font-black text-amber-900 text-sm mb-1">Tính năng đang phát triển — Coming Soon</p>
+                        <p className="text-amber-800 text-xs font-medium leading-relaxed">
+                            McDonald's Omega (ω) yêu cầu thư viện <code className="bg-amber-100 px-1 rounded">psych::omega()</code> hiện chưa tương thích với WebAssembly.
+                            Kết quả hiển thị bên dưới là <strong>Cronbach Alpha (α)</strong> — không phải Omega thực.
+                            Hãy dùng <strong>Cronbach Alpha</strong> thay thế cho đến khi tính năng này hoàn thiện.
+                        </p>
+                    </div>
+                </div>
+
                 <div className="bg-white rounded-2xl border border-blue-100 shadow-xl p-2 md:p-6 overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase text-blue-900 mb-4 px-2 flex items-center">
                         {isAnalyzing ? 'Processing...' : 'McDonald\'s Omega Reliability'}
