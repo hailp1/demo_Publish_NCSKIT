@@ -190,7 +190,7 @@ export function ResultsDisplay({
             case 'ipma':
                 return <IPMAResults results={analysisData} />;
             case 'htmt':
-                return <HTMTResults results={analysisData} columns={analysisColumns} />;
+                return <HTMTResults results={analysisData} />;
             case 'vif':
                 return <VIFResults results={analysisData} columns={analysisColumns} />;
             case 'outlier':

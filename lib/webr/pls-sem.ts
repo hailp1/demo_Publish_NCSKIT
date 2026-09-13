@@ -468,8 +468,8 @@ export async function runPLSSEM(
  */
 export async function runBlindfolding(
   data: number[][],
-  measurementModel: { construct: string; items: number[] }[],
-  structuralModel: { from: string; to: string }[]
+  measurementModel: { construct: string; items: number[] }[] = [],
+  structuralModel: { from: string; to: string }[] = []
 ): Promise<any> {
   const measurementSyntax = measurementModel.map(m => 
     `composite("${m.construct}", multi_items("V", c(${m.items.map(i => i + 1).join(',')})))`
@@ -745,9 +745,9 @@ export async function runIPMA(data: number[][], targetIndex: number): Promise<an
  */
 export async function runMGA(
   data: number[][],
-  measurementModel: { construct: string; items: number[] }[],
-  structuralModel: { from: string; to: string }[],
-  groupVariable: number[], // Array of 0s and 1s indicating group membership
+  measurementModel: { construct: string; items: number[] }[] = [],
+  structuralModel: { from: string; to: string }[] = [],
+  groupVariable: number[] = [], // Array of 0s and 1s indicating group membership
   nBootstrap: number = 1000
 ): Promise<any> {
   const measurementSyntax = measurementModel.map(m => 

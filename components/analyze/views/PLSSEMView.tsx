@@ -622,7 +622,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
                 const numericData = data.map(row =>
                     columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
                 );
-                const result = await runBlindfolding(numericData as number[][], omissionDist);
+                const result = await runBlindfolding(numericData as number[][], [], []);
                 setResults({ type: 'blindfolding', data: result, columns });
                 setStep('results');
                 showToast('Blindfolding hoàn thành!', 'success');
@@ -691,7 +691,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
                     columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
                 );
                 const groupIdx = columns.indexOf(groupVar);
-                const result = await runMGA(numericData as number[][], groupIdx >= 0 ? groupIdx : 0);
+                const result = await runMGA(numericData as number[][], [], [], []);
                 setResults({ type: 'mga', data: result, columns });
                 setStep('results');
                 showToast('Multi-Group Analysis hoàn thành!', 'success');
@@ -755,7 +755,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
                     columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
                 );
                 const targetIdx = columns.indexOf(targetVar);
-                const result = await runIPMA(numericData as number[][], targetIdx >= 0 ? targetIdx : columns.length - 1, columns);
+                const result = await runIPMA(numericData as number[][], targetIdx >= 0 ? targetIdx : columns.length - 1);
                 setResults({ type: 'ipma', data: result, columns });
                 setStep('results');
                 showToast('IPMA hoàn thành!', 'success');
