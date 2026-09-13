@@ -104,25 +104,7 @@ export function BasicStatsView({
             setStep('results');
             showToast(successMsg, 'success');
         } catch (err: any) {
-            // Refund credits if analysis failed after deduction
-            if (user && cost > 0 && creditDeducted) {
-                try {
-                    const { getSupabase } = await import('@/utils/supabase/client');
-                    const supabase = getSupabase();
-                    const { data: profile } = await supabase.from('profiles').select('tokens').eq('id', user.id).single();
-                    if (profile) {
-                        const refundedBalance = (profile.tokens || 0) + cost;
-                        await supabase.from('profiles').update({ tokens: refundedBalance, updated_at: new Date().toISOString() }).eq('id', user.id);
-                        await supabase.from('token_transactions').insert({
-                            user_id: user.id, amount: cost, type: 'refund_analysis',
-                            description: `Hoàn tiền: ${analysisKey} thất bại`, balance_after: refundedBalance
-                        });
-                        setNcsBalance(refundedBalance);
-                    }
-                } catch (refundErr) {
-                    console.error('[Credits] Refund failed:', refundErr);
-                }
-            }
+            // In demo mode (no Supabase), skip refund logic entirely
             showToast(`${t(locale, 'error')}: ` + (err instanceof Error ? err.message : String(err)), 'error');
             handleAnalysisError(err);
         } finally {

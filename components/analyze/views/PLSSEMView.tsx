@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PLS-SEM Analysis View
  * Handles all PLS-SEM specific methods for Analyze2 workflow
  */
@@ -15,7 +15,7 @@ import {
     runMediationModeration,
     runIPMA,
     runMGA,
-    runBlindfolding
+    runSimpleBlindfolding
 } from '@/lib/webr/pls-sem';
 import { SmartGroupSelector } from '@/components/VariableSelector';
 import HTMTSelection from '@/components/HTMTSelection';
@@ -78,7 +78,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
 
         if (user) {
             const cost = await getAnalysisCost('omega');
-            const hasEnough = await checkBalance(user.id, cost);
+            const { hasEnough } = await checkBalance(user.id, cost);
             if (!hasEnough) {
                 setRequiredCredits(cost);
                 setCurrentAnalysisCost(cost);
@@ -134,7 +134,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
 
         if (user) {
             const cost = await getAnalysisCost('outlier');
-            const hasEnough = await checkBalance(user.id, cost);
+            const { hasEnough } = await checkBalance(user.id, cost);
             if (!hasEnough) {
                 setRequiredCredits(cost);
                 setCurrentAnalysisCost(cost);
@@ -189,7 +189,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
 
         if (user) {
             const cost = await getAnalysisCost('htmt');
-            const hasEnough = await checkBalance(user.id, cost);
+            const { hasEnough } = await checkBalance(user.id, cost);
             if (!hasEnough) {
                 setRequiredCredits(cost);
                 setCurrentAnalysisCost(cost);
@@ -240,7 +240,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
 
         if (user) {
             const cost = await getAnalysisCost('vif');
-            const hasEnough = await checkBalance(user.id, cost);
+            const { hasEnough } = await checkBalance(user.id, cost);
             if (!hasEnough) {
                 setRequiredCredits(cost);
                 setCurrentAnalysisCost(cost);
@@ -295,7 +295,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
 
         if (user) {
             const cost = await getAnalysisCost('bootstrap');
-            const hasEnough = await checkBalance(user.id, cost);
+            const { hasEnough } = await checkBalance(user.id, cost);
             if (!hasEnough) {
                 setRequiredCredits(cost);
                 setCurrentAnalysisCost(cost);
@@ -622,7 +622,7 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
                 const numericData = data.map(row =>
                     columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
                 );
-                const result = await runBlindfolding(numericData as number[][], [], []);
+                const result = await runSimpleBlindfolding(numericData as number[][], omissionDist);
                 setResults({ type: 'blindfolding', data: result, columns });
                 setStep('results');
                 showToast('Blindfolding hoàn thành!', 'success');

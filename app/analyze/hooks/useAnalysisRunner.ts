@@ -109,7 +109,12 @@ export function useAnalysisRunner({
             }, 300);
 
             const numericData = data.map((row: any) =>
-                numericColumns.map((col: string) => Number(row[col]) || 0)
+                numericColumns.map((col: string) => {
+                    const v = row[col];
+                    if (v === null || v === undefined || v === '' || v === 'NA') return null;
+                    const n = Number(v);
+                    return isNaN(n) ? null : n;
+                })
             );
 
             let analysisResults: any;
