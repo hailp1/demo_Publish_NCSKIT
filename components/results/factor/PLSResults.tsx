@@ -237,6 +237,117 @@ export const PLSResults: React.FC<PLSResultsProps> = ({ results }) => {
                 </CardContent>
             </Card>
 
+            {/* 3.5 Outer Loadings (Indicator Reliability) */}
+            {outer_loadings && Object.keys(outer_loadings).length > 0 && (
+                <Card className="border-blue-100 shadow-sm overflow-hidden">
+                    <CardHeader className="bg-slate-50/50 border-b border-blue-50">
+                        <CardTitle className="text-sm font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-blue-600" />
+                            Outer Loadings (Indicator Reliability)
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <TableHeader>Construct</TableHeader>
+                                        <TableHeader>Indicator</TableHeader>
+                                        <TableHeader>Loading (λ)</TableHeader>
+                                        <TableHeader>Assessment</TableHeader>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {Object.entries(outer_loadings).flatMap(([construct, items]: [string, any]) =>
+                                        Object.entries(items || {}).map(([item, loading]: [string, any]) => {
+                                            const val = typeof loading === 'number' ? loading : Number(loading);
+                                            const isGood = val >= 0.70;
+                                            const isAcceptable = val >= 0.40 && val < 0.70;
+                                            return (
+                                                <tr key={`${construct}-${item}`} className="hover:bg-blue-50/30">
+                                                    <td className="py-3 px-4 font-bold text-blue-900">{construct}</td>
+                                                    <td className="py-3 px-4 text-slate-700 font-medium">{item}</td>
+                                                    <td className={`py-3 px-4 font-black ${isGood ? 'text-emerald-600' : isAcceptable ? 'text-amber-600' : 'text-rose-600'}`}>
+                                                        {safeToFixed(val)}
+                                                    </td>
+                                                    <td className="py-3 px-4">
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                                            isGood ? 'bg-emerald-100 text-emerald-700'
+                                                            : isAcceptable ? 'bg-amber-100 text-amber-700'
+                                                            : 'bg-rose-100 text-rose-700'
+                                                        }`}>
+                                                            {isGood ? '≥ .70 ✓' : isAcceptable ? '.40–.69' : '< .40 ✗'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="p-4 bg-blue-50/30 text-[10px] text-blue-800 font-medium italic border-t border-blue-50">
+                            * Outer loading ≥ .70 preferred (Hair et al., 2017); ≥ .40 minimum acceptable if AVE ≥ .50.
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* 3.7 Effect Size (f²) */}
+            {f_squared && Object.keys(f_squared).length > 0 && (
+                <Card className="border-blue-100 shadow-sm overflow-hidden">
+                    <CardHeader className="bg-slate-50/50 border-b border-blue-50">
+                        <CardTitle className="text-sm font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
+                            <Target className="w-4 h-4 text-blue-600" />
+                            Effect Size (f²) — Structural Model
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <TableHeader>Endogenous Construct</TableHeader>
+                                        <TableHeader>Predictor</TableHeader>
+                                        <TableHeader>f²</TableHeader>
+                                        <TableHeader>Effect Size</TableHeader>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {Object.entries(f_squared).flatMap(([endo, preds]: [string, any]) =>
+                                        Object.entries(preds || {})
+                                            .filter(([pred]) => pred !== 'Rsq' && pred !== 'AdjRsq')
+                                            .map(([pred, val]: [string, any]) => {
+                                                const f2 = typeof val === 'number' ? val : Number(val);
+                                                const label = f2 >= 0.35 ? 'Large' : f2 >= 0.15 ? 'Medium' : f2 >= 0.02 ? 'Small' : 'Negligible';
+                                                const badge = f2 >= 0.35 ? 'bg-emerald-100 text-emerald-700'
+                                                    : f2 >= 0.15 ? 'bg-blue-100 text-blue-700'
+                                                    : f2 >= 0.02 ? 'bg-amber-100 text-amber-700'
+                                                    : 'bg-slate-100 text-slate-500';
+                                                return (
+                                                    <tr key={`${endo}-${pred}`} className="hover:bg-blue-50/30">
+                                                        <td className="py-3 px-4 font-bold text-blue-900">{endo}</td>
+                                                        <td className="py-3 px-4 text-slate-700 font-medium">{pred}</td>
+                                                        <td className="py-3 px-4 font-black text-slate-900">{safeToFixed(f2)}</td>
+                                                        <td className="py-3 px-4">
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${badge}`}>
+                                                                {label}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="p-4 bg-blue-50/30 text-[10px] text-blue-800 font-medium italic border-t border-blue-50">
+                            * Cohen (1988) benchmarks: f² ≥ .02 small, ≥ .15 medium, ≥ .35 large.
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             {/* 4. Fornell-Larcker Criterion */}
             <Card className="border-blue-100 shadow-sm overflow-hidden">
                 <CardHeader className="bg-slate-50/50 border-b border-blue-50">

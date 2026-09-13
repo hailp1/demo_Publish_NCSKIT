@@ -118,7 +118,7 @@ export function ResearchModelDiagram({ paths, className = "" }: ResearchModelDia
                                         fontWeight="bold"
                                         fill={isSig ? "#4f46e5" : "#94a3b8"}
                                     >
-                                        {c.coef.toFixed(3)}
+                                        {typeof c.coef === 'number' ? c.coef.toFixed(3) : '-'}
                                         {c.pVal !== undefined && c.pVal <= 0.001 ? '***' : c.pVal !== undefined && c.pVal <= 0.01 ? '**' : c.pVal !== undefined && c.pVal <= 0.05 ? '*' : ''}
                                     </text>
                                 )}

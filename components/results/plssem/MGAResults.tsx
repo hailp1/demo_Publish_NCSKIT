@@ -146,18 +146,20 @@ export default function MGAResults({ results }: MGAResultsProps) {
                     <div>
                         <p className="text-blue-700 mb-1">Nhóm cao nhất:</p>
                         <p className="font-bold text-blue-900">Nhóm {maxGroup}</p>
-                        <p className="text-xs text-blue-600">{maxMean.toFixed(4)}</p>
+                        <p className="text-xs text-blue-600">{typeof maxMean === 'number' ? maxMean.toFixed(4) : '-'}</p>
                     </div>
                     <div>
                         <p className="text-blue-700 mb-1">Nhóm thấp nhất:</p>
                         <p className="font-bold text-blue-900">Nhóm {minGroup}</p>
-                        <p className="text-xs text-blue-600">{minMean.toFixed(4)}</p>
+                        <p className="text-xs text-blue-600">{typeof minMean === 'number' ? minMean.toFixed(4) : '-'}</p>
                     </div>
                     <div>
                         <p className="text-blue-700 mb-1">Chênh lệch:</p>
-                        <p className="font-bold text-blue-900">{difference.toFixed(4)}</p>
+                        <p className="font-bold text-blue-900">{typeof difference === 'number' ? difference.toFixed(4) : '-'}</p>
                         <p className="text-xs text-blue-600">
-                            {((difference / minMean) * 100).toFixed(1)}% khác biệt
+                            {(minMean != null && minMean !== 0 && typeof difference === 'number')
+                                ? `${((difference / minMean) * 100).toFixed(1)}% difference`
+                                : 'N/A'}
                         </p>
                     </div>
                 </div>

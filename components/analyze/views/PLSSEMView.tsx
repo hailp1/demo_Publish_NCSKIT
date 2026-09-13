@@ -554,30 +554,271 @@ export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
         );
     }
 
-    // Placeholder for other methods
+    // ── Bootstrap UI ─────────────────────────────────────────────────────────
+    if (method === 'bootstrap') {
+        const [nBootstrap, setNBootstrap] = React.useState(500);
+        return (
+            <div className="max-w-3xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <Sparkles className="w-8 h-8 text-blue-600" />
+                        <h2 className="text-3xl font-bold text-gray-800">Bootstrapping</h2>
+                    </div>
+                    <p className="text-gray-600">Ước lượng khoảng tin cậy 95% cho các tham số thống kê</p>
+                    <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <Info className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm text-blue-700 font-medium">CI không chứa 0 → hệ số có ý nghĩa thống kê</span>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader><CardTitle>Cài đặt Bootstrap</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                Số lần lấy mẫu lại (Iterations)
+                            </label>
+                            <select
+                                value={nBootstrap}
+                                onChange={(e) => setNBootstrap(Number(e.target.value))}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value={200}>200 (nhanh, thử nghiệm)</option>
+                                <option value={500}>500 (chuẩn)</option>
+                                <option value={1000}>1,000 (khuyến nghị)</option>
+                                <option value={5000}>5,000 (publication quality)</option>
+                            </select>
+                        </div>
+                        <p className="text-xs text-gray-500 italic">Sử dụng tất cả {columns.length} biến trong dataset</p>
+                    </CardContent>
+                </Card>
+
+                <button
+                    onClick={() => runBootstrapAnalysis(nBootstrap)}
+                    disabled={isAnalyzing}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-50"
+                >
+                    {isAnalyzing ? `Đang chạy Bootstrap (${nBootstrap} iterations)...` : `Chạy Bootstrapping (${nBootstrap} samples)`}
+                </button>
+                <button onClick={onBack} className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">← Quay lại</button>
+                {isAnalyzing && (
+                    <div className="text-center py-6">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                        <p className="mt-3 text-gray-600">Đang thực hiện {nBootstrap.toLocaleString()} iterations...</p>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ── Blindfolding UI ───────────────────────────────────────────────────────
+    if (method === 'blindfolding') {
+        const [omissionDist, setOmissionDist] = React.useState(7);
+
+        const runBlindfoldingAnalysis = async () => {
+            if (columns.length < 2) { showToast('Blindfolding cần ít nhất 2 biến', 'error'); return; }
+            setIsAnalyzing(true);
+            try {
+                const numericData = data.map(row =>
+                    columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
+                );
+                const result = await runBlindfolding(numericData as number[][], omissionDist);
+                setResults({ type: 'blindfolding', data: result, columns });
+                setStep('results');
+                showToast('Blindfolding hoàn thành!', 'success');
+            } catch (error) { handleAnalysisError(error); }
+            finally { setIsAnalyzing(false); }
+        };
+
+        return (
+            <div className="max-w-3xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <CheckCircle className="w-8 h-8 text-teal-600" />
+                        <h2 className="text-3xl font-bold text-gray-800">Blindfolding (Q²)</h2>
+                    </div>
+                    <p className="text-gray-600">Kiểm tra độ liên quan dự đoán của mô hình (Predictive Relevance)</p>
+                    <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-lg">
+                        <Info className="w-4 h-4 text-teal-600" />
+                        <span className="text-sm text-teal-700 font-medium">Q² &gt; 0 → Mô hình có độ liên quan dự đoán</span>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader><CardTitle>Omission Distance (D)</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        <select
+                            value={omissionDist}
+                            onChange={(e) => setOmissionDist(Number(e.target.value))}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
+                        >
+                            <option value={5}>D = 5</option>
+                            <option value={7}>D = 7 (mặc định theo Hair et al.)</option>
+                            <option value={10}>D = 10</option>
+                        </select>
+                        <p className="text-xs text-gray-500 italic">D phải là ước số của N. Giá trị 7 là mặc định theo Hair et al. (2017).</p>
+                        <p className="text-xs text-gray-500">Dataset: {data.length} quan sát · {columns.length} biến</p>
+                    </CardContent>
+                </Card>
+
+                <button
+                    onClick={runBlindfoldingAnalysis}
+                    disabled={isAnalyzing}
+                    className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg disabled:opacity-50"
+                >
+                    {isAnalyzing ? 'Đang tính toán Q²...' : 'Chạy Blindfolding'}
+                </button>
+                <button onClick={onBack} className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">← Quay lại</button>
+                {isAnalyzing && (
+                    <div className="text-center py-6">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+                        <p className="mt-3 text-gray-600">Đang tính Q² với D = {omissionDist}...</p>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ── MGA UI ────────────────────────────────────────────────────────────────
+    if (method === 'mga') {
+        const [groupVar, setGroupVar] = React.useState(columns[0] || '');
+
+        const runMGAAnalysis = async () => {
+            if (columns.length < 2) { showToast('MGA cần ít nhất 2 biến', 'error'); return; }
+            setIsAnalyzing(true);
+            try {
+                const numericData = data.map(row =>
+                    columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
+                );
+                const groupIdx = columns.indexOf(groupVar);
+                const result = await runMGA(numericData as number[][], groupIdx >= 0 ? groupIdx : 0);
+                setResults({ type: 'mga', data: result, columns });
+                setStep('results');
+                showToast('Multi-Group Analysis hoàn thành!', 'success');
+            } catch (error) { handleAnalysisError(error); }
+            finally { setIsAnalyzing(false); }
+        };
+
+        return (
+            <div className="max-w-3xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <Info className="w-8 h-8 text-indigo-600" />
+                        <h2 className="text-3xl font-bold text-gray-800">Multi-Group Analysis (MGA)</h2>
+                    </div>
+                    <p className="text-gray-600">So sánh sự khác biệt giữa các nhóm (giới tính, địa lý, v.v.)</p>
+                </div>
+
+                <Card>
+                    <CardHeader><CardTitle>Chọn biến phân nhóm (Grouping Variable)</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        <select
+                            value={groupVar}
+                            onChange={(e) => setGroupVar(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500"
+                        >
+                            {columns.map(col => (
+                                <option key={col} value={col}>{col}</option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-500 italic">Biến này phải là biến phân loại (categorical) với 2+ giá trị riêng biệt.</p>
+                    </CardContent>
+                </Card>
+
+                <button
+                    onClick={runMGAAnalysis}
+                    disabled={isAnalyzing}
+                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg disabled:opacity-50"
+                >
+                    {isAnalyzing ? 'Đang phân tích MGA...' : 'Chạy Multi-Group Analysis'}
+                </button>
+                <button onClick={onBack} className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">← Quay lại</button>
+                {isAnalyzing && (
+                    <div className="text-center py-6">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+                        <p className="mt-3 text-gray-600">Đang so sánh các nhóm...</p>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ── IPMA UI ───────────────────────────────────────────────────────────────
+    if (method === 'ipma') {
+        const [targetVar, setTargetVar] = React.useState(columns[columns.length - 1] || '');
+
+        const runIPMAAnalysis = async () => {
+            if (columns.length < 2) { showToast('IPMA cần ít nhất 2 biến', 'error'); return; }
+            setIsAnalyzing(true);
+            try {
+                const numericData = data.map(row =>
+                    columns.map(col => ((v) => (v === null || v === undefined || v === '' || v === 'NA' ? null : (isNaN(Number(v)) ? null : Number(v))))(row[col]))
+                );
+                const targetIdx = columns.indexOf(targetVar);
+                const result = await runIPMA(numericData as number[][], targetIdx >= 0 ? targetIdx : columns.length - 1, columns);
+                setResults({ type: 'ipma', data: result, columns });
+                setStep('results');
+                showToast('IPMA hoàn thành!', 'success');
+            } catch (error) { handleAnalysisError(error); }
+            finally { setIsAnalyzing(false); }
+        };
+
+        return (
+            <div className="max-w-3xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <CheckCircle className="w-8 h-8 text-amber-600" />
+                        <h2 className="text-3xl font-bold text-gray-800">IPMA — Importance-Performance Map</h2>
+                    </div>
+                    <p className="text-gray-600">Phân tích tầm quan trọng (Importance) và hiệu suất (Performance) của các biến</p>
+                </div>
+
+                <Card>
+                    <CardHeader><CardTitle>Chọn biến mục tiêu (Target Variable)</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        <select
+                            value={targetVar}
+                            onChange={(e) => setTargetVar(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500"
+                        >
+                            {columns.map(col => (
+                                <option key={col} value={col}>{col}</option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-500 italic">Tầm quan trọng được đo bằng tương quan với biến mục tiêu. Hiệu suất đo bằng giá trị trung bình.</p>
+                    </CardContent>
+                </Card>
+
+                <button
+                    onClick={runIPMAAnalysis}
+                    disabled={isAnalyzing}
+                    className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg disabled:opacity-50"
+                >
+                    {isAnalyzing ? 'Đang tính IPMA...' : 'Chạy IPMA Analysis'}
+                </button>
+                <button onClick={onBack} className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">← Quay lại</button>
+                {isAnalyzing && (
+                    <div className="text-center py-6">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent"></div>
+                        <p className="mt-3 text-gray-600">Đang tính Importance-Performance...</p>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ── Fallback (mediation and any future method) ────────────────────────────
     return (
         <div className="max-w-3xl mx-auto space-y-6">
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                    {method.toUpperCase()}
-                </h2>
-                <p className="text-gray-600">
-                    Giao diện đang được phát triển...
-                </p>
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">{method.toUpperCase()}</h2>
+                <p className="text-gray-500 text-sm">This analysis type is not yet configured in the UI.</p>
             </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                <p className="text-yellow-800 font-medium">
-                    🚧 Tính năng này đang được hoàn thiện. R code đã sẵn sàng, UI đang được xây dựng.
-                </p>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 text-slate-600 text-sm">
+                The R computation engine is ready. A dedicated input form for this analysis
+                will be added in a future release.
             </div>
-
-            <button
-                onClick={onBack}
-                className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors"
-            >
-                ← Quay lại
-            </button>
+            <button onClick={onBack} className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">← Back</button>
         </div>
     );
 };

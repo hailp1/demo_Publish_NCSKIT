@@ -19,8 +19,10 @@ interface MannWhitneyResultsProps {
  */
 export const MannWhitneyResults = React.memo(function MannWhitneyResults({ results, columns, variableNames }: MannWhitneyResultsProps) {
     if (!results) return null;
-    const { statistic, pValue, median1, median2, effectSize } = results;
-    const significant = pValue < 0.05;
+    const { statistic, median1, median2, effectSize } = results;
+    const pValue     = typeof results.pValue === 'number' ? results.pValue : null;
+    const significant = pValue != null && pValue < 0.05;
+    const fmtP = (p: number | null) => p == null ? 'N/A' : p < 0.001 ? '< .001' : p.toFixed(3);
 
     return (
         <div className="space-y-8 pb-10 animate-in fade-in duration-700">
@@ -42,7 +44,7 @@ export const MannWhitneyResults = React.memo(function MannWhitneyResults({ resul
                     <div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">p-value</p>
                         <p className={`text-2xl font-black ${significant ? 'text-emerald-600' : 'text-slate-900'}`}>
-                            {pValue < 0.001 ? '< .001' : pValue.toFixed(4)}
+                            {fmtP(pValue)}
                         </p>
                     </div>
                 </div>

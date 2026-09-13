@@ -17,8 +17,15 @@ interface KruskalWallisResultsProps {
  */
 export const KruskalWallisResults = React.memo(function KruskalWallisResults({ results, columns, variableNames }: KruskalWallisResultsProps) {
     if (!results) return null;
-    const pValue = results.pValue;
-    const significant = pValue < 0.05;
+
+    const pValue   = typeof results.pValue === 'number' ? results.pValue : null;
+    const significant = pValue != null && pValue < 0.05;
+
+    const fmtP = (p: number | null) => {
+        if (p == null) return 'N/A';
+        if (p < 0.001) return '< .001';
+        return p.toFixed(3);
+    };
 
     return (
         <div className="space-y-8 pb-10 animate-in fade-in duration-700">
@@ -40,7 +47,7 @@ export const KruskalWallisResults = React.memo(function KruskalWallisResults({ r
                     <div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">p-value</p>
                         <p className={`text-2xl font-black ${significant ? 'text-emerald-600' : 'text-slate-900'}`}>
-                            {pValue < 0.001 ? '< .001' : pValue.toFixed(4)}
+                            {fmtP(pValue)}
                         </p>
                     </div>
                 </div>
@@ -72,10 +79,12 @@ export const KruskalWallisResults = React.memo(function KruskalWallisResults({ r
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-blue-50">
-                            {results.medians?.map((median: number, idx: number) => (
+                            {results.medians?.map((median: number | null | undefined, idx: number) => (
                                 <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
                                     <td className="py-5 px-6 text-sm font-bold text-slate-700">Group {idx + 1}</td>
-                                    <td className="py-5 px-4 text-sm text-right font-mono font-bold text-blue-900">{median.toFixed(3)}</td>
+                                    <td className="py-5 px-4 text-sm text-right font-mono font-bold text-blue-900">
+                                        {typeof median === 'number' ? median.toFixed(3) : '-'}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

@@ -36,6 +36,16 @@ const ClusterResults = lazy(() => import('./results/cluster/ClusterResults').the
 const PLSResults = lazy(() => import('./results/factor/PLSResults').then(m => ({ default: m.PLSResults })));
 const AutoPilotReport = lazy(() => import('./results/AutoPilotReport').then(m => ({ default: m.AutoPilotReport })));
 
+// PLS-SEM sub-analysis result components (lazy loaded)
+const BootstrapResults    = lazy(() => import('./results/plssem/BootstrapResults'));
+const BlindfoldingResults = lazy(() => import('./results/plssem/BlindfoldingResults'));
+const MGAResults          = lazy(() => import('./results/plssem/MGAResults'));
+const IPMAResults         = lazy(() => import('./results/plssem/IPMAResults'));
+const HTMTResults         = lazy(() => import('./results/plssem/HTMTResults').then(m => ({ default: m.HTMTResults })));
+const VIFResults          = lazy(() => import('./results/plssem/VIFResults').then(m => ({ default: m.VIFResults })));
+const OutlierResults      = lazy(() => import('./results/plssem/OutlierResults').then(m => ({ default: m.OutlierResults })));
+const OmegaResults        = lazy(() => import('./results/plssem/OmegaResults').then(m => ({ default: m.OmegaResults })));
+
 
 interface ResultsDisplayProps {
     results: any;
@@ -172,6 +182,23 @@ export function ResultsDisplay({
                 return <ClusterResults results={analysisData} columns={analysisColumns} />;
             case 'pls-sem':
                 return <PLSResults results={analysisData} columns={analysisColumns} />;
+            // ── PLS-SEM sub-analyses ────────────────────────────────────────────
+            case 'bootstrap':
+                return <BootstrapResults results={analysisData} />;
+            case 'blindfolding':
+                return <BlindfoldingResults results={analysisData} />;
+            case 'mga':
+                return <MGAResults results={analysisData} />;
+            case 'ipma':
+                return <IPMAResults results={analysisData} />;
+            case 'htmt':
+                return <HTMTResults results={analysisData} columns={analysisColumns} />;
+            case 'vif':
+                return <VIFResults results={analysisData} columns={analysisColumns} />;
+            case 'outlier':
+                return <OutlierResults results={analysisData} columns={analysisColumns} />;
+            case 'omega-detail':
+                return <OmegaResults results={analysisData} columns={analysisColumns} scaleName={scaleName} />;
             case 'auto-pilot':
                 return <AutoPilotReport results={analysisData} columns={analysisColumns} />;
             default:

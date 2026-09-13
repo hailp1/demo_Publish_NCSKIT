@@ -80,27 +80,29 @@ export default function BootstrapResults({ results }: BootstrapResultsProps) {
                         </thead>
                         <tbody>
                             {ci_lower.map((lower, idx) => {
-                                const upper = ci_upper[idx];
-                                const width = upper - lower;
-                                const isNarrow = width < 0.5;
+                                const upper = ci_upper?.[idx];
+                                const lowerNum = typeof lower === 'number' ? lower : null;
+                                const upperNum = typeof upper === 'number' ? upper : null;
+                                const width = lowerNum != null && upperNum != null ? upperNum - lowerNum : null;
+                                const isNarrow = width != null && width < 0.5;
 
                                 return (
                                     <tr key={idx} className="border-t border-slate-100 hover:bg-slate-50">
                                         <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                                            Biến {idx + 1}
+                                            Variable {idx + 1}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-right text-slate-700">
-                                            {lower.toFixed(4)}
+                                            {lowerNum != null ? lowerNum.toFixed(4) : '-'}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-right text-slate-700">
-                                            {upper.toFixed(4)}
+                                            {upperNum != null ? upperNum.toFixed(4) : '-'}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-right">
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${isNarrow
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
-                                                {width.toFixed(4)}
+                                                {width != null ? width.toFixed(4) : '-'}
                                             </span>
                                         </td>
                                     </tr>

@@ -192,7 +192,7 @@ export default function SEMPathDiagram({
                                 textAnchor="middle"
                                 className="text-sm font-bold fill-violet-700"
                             >
-                                β={path.beta.toFixed(2)}{formatPValue(path.pvalue)}
+                                β={typeof path.beta === 'number' ? path.beta.toFixed(2) : '?'}{path.pvalue != null ? formatPValue(path.pvalue) : ''}
                             </text>
                         </g>
                     );

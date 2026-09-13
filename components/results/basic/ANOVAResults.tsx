@@ -25,10 +25,11 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
     }, []);
 
     const displayResults = results.data || results;
-    if (!displayResults || displayResults.pValue === undefined) return null;
+    if (!displayResults || displayResults.pValue == null) return null;
 
-    const pValue = displayResults.pValue;
+    const pValue      = typeof displayResults.pValue === 'number' ? displayResults.pValue : 0;
     const significant = pValue < 0.05;
+    const fmtP = (p: number) => p < 0.001 ? '< .001' : p.toFixed(3);
 
     return (
         <div className="space-y-8 pb-10 animate-in fade-in duration-700">
@@ -50,7 +51,7 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                     <div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">p-value</p>
                         <p className={`text-2xl font-black ${significant ? 'text-emerald-600' : 'text-slate-900'}`}>
-                            {pValue < 0.001 ? '< .001' : pValue.toFixed(4)}
+                            {fmtP(pValue)}
                         </p>
                     </div>
                 </div>
@@ -93,7 +94,7 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                                 <td className="py-5 px-4 text-sm text-right font-mono">{displayResults.msBetween?.toFixed(3)}</td>
                                  <td className="py-5 px-4 text-sm text-right font-black text-blue-900">{(displayResults.F || displayResults.fStatistic)?.toFixed(3)}</td>
                                 <td className={`py-5 px-4 text-sm text-right font-black ${significant ? 'text-emerald-700 underline underline-offset-4' : 'text-slate-700'}`}>
-                                    {pValue < 0.001 ? '< .001' : pValue.toFixed(4)} {significant ? ' *' : ''}
+                                    {pValue < 0.001 ? '< .001' : fmtP(pValue)} {significant ? ' *' : ''}
                                 </td>
                             </tr>
                              <tr className="hover:bg-blue-50/30 transition-colors">

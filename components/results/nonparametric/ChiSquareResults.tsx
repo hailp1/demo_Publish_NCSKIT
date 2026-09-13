@@ -18,8 +18,10 @@ interface ChiSquareResultsProps {
 export const ChiSquareResults = React.memo(function ChiSquareResults({ results, columns, variableNames }: ChiSquareResultsProps) {
     if (!results) return null;
 
-    const { statistic, df, pValue, observed, expected, cramersV } = results;
-    const significant = pValue < 0.05;
+    const { statistic, df, observed, expected, cramersV } = results;
+    const pValue      = typeof results.pValue === 'number' ? results.pValue : null;
+    const significant = pValue != null && pValue < 0.05;
+    const fmtP = (p: number | null) => p == null ? 'N/A' : p < 0.001 ? '< .001' : p.toFixed(3);
 
     return (
         <div className="space-y-8 pb-10 animate-in fade-in duration-700">
@@ -31,7 +33,7 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
                     </div>
                     <div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chi-Square (χ²)</p>
-                        <p className="text-2xl font-black text-blue-900">{statistic.toFixed(3)}</p>
+                        <p className="text-2xl font-black text-blue-900">{typeof statistic === 'number' ? statistic.toFixed(3) : '-'}</p>
                     </div>
                 </div>
                 <div className="bg-white border border-blue-100 p-5 rounded-xl shadow-sm flex items-center gap-4">
@@ -41,7 +43,7 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
                     <div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">p-value</p>
                         <p className={`text-2xl font-black ${significant ? 'text-emerald-600' : 'text-slate-900'}`}>
-                            {pValue < 0.001 ? '< .001' : pValue.toFixed(4)}
+                            {fmtP(pValue)}
                         </p>
                     </div>
                 </div>
