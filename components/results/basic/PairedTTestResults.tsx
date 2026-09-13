@@ -32,7 +32,7 @@ export const PairedTTestResults = React.memo(function PairedTTestResults({ resul
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                         <Link className="w-4 h-4 text-blue-600" />
-                        Paired Samples T-Test (Kiểm định T-Test từng cặp)
+                        Paired Samples t-Test
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -43,20 +43,19 @@ export const PairedTTestResults = React.memo(function PairedTTestResults({ resul
                                 <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Mean</th>
                                 <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-center">t</th>
                                 <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-center">df</th>
-                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Sig. (2-tailed)</th>
+                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">p (2-tailed)</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-blue-50">
                             <tr className="hover:bg-blue-50/30 transition-colors">
                                 <td className="py-5 px-6">
-                                    <div className="text-sm font-bold text-blue-800">{columns[0] || 'Base'} - {columns[1] || 'Target'}</div>
-                                    <div className="text-[10px] text-slate-400 italic">So sánh cặp biến phụ thuộc</div>
+                                    <div className="text-sm font-bold text-blue-800">{columns[0] || 'Base'} − {columns[1] || 'Target'}</div>
                                 </td>
                                 <td className="py-5 px-4 text-sm text-right font-mono">{results.meanDiff?.toFixed(3)}</td>
                                 <td className="py-5 px-4 text-sm text-center font-bold">{results.t?.toFixed(3)}</td>
                                 <td className="py-5 px-4 text-sm text-center font-bold text-slate-500">{results.df?.toFixed(0)}</td>
                                 <td className={`py-5 px-4 text-sm text-right font-black ${significant ? 'text-blue-600 underline underline-offset-4' : 'text-slate-400'}`}>
-                                    {pValue?.toFixed(4)} {significant ? ' (Sig.)' : ''}
+                                    {pValue < 0.001 ? '< .001' : pValue?.toFixed(3)}
                                 </td>
                             </tr>
                         </tbody>

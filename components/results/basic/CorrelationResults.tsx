@@ -122,10 +122,31 @@ export const CorrelationResults = React.memo(function CorrelationResults({ resul
                 />
             )}
 
-            <ScientificNote 
-                insight="Hệ số tương quan Pearson (r) đo lường mức độ và chiều hướng liên hệ tuyến tính giữa hai biến định lượng. Giá trị r nằm trong khoảng [-1, 1]. p-value < 0.05 hoặc 0.01 cho thấy mối tương quan có ý nghĩa thống kê trong tổng thể."
-                citation="Cohen, 1988"
-                reference="Cohen, J. (1988). Statistical Power Analysis for the Behavioral Sciences (2nd ed.). Lawrence Erlbaum Associates."
+            <ScientificNote
+                insight="The Pearson product-moment correlation coefficient (r) quantifies the strength and direction of the linear relationship between two continuous variables. r ranges from −1 (perfect negative) to +1 (perfect perfect), with 0 indicating no linear association. Spearman's rs is the appropriate alternative when data are ordinal or when normality is violated. Always report r alongside its p-value, sample size N, and 95% CI, and interpret the effect size using Cohen's (1988) benchmarks. Note that statistical significance does not imply practical importance, and r² conveys the proportion of shared variance — a more informative effect-size metric for applied research."
+                citation="Cohen, 1988; Mukaka, 2012"
+                reference={[
+                    "Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Lawrence Erlbaum Associates.",
+                    "Mukaka, M. M. (2012). Statistics corner: A guide to appropriate use of correlation coefficient in medical research. Malawi Medical Journal, 24(3), 69–71."
+                ]}
+                thresholds={[
+                    { label: 'Small', value: '|r| = .10–.29', status: 'acceptable' },
+                    { label: 'Medium', value: '|r| = .30–.49', status: 'acceptable' },
+                    { label: 'Large', value: '|r| ≥ .50', status: 'good' },
+                    { label: 'α level', value: 'p < .05', status: 'good' },
+                ]}
+                assumptions={[
+                    "Both variables are measured at the interval or ratio level (Pearson); ordinal data require Spearman's rs.",
+                    "The relationship is approximately linear — inspect scatter plots before reporting r.",
+                    "No severe multivariate outliers, which can inflate or deflate r substantially.",
+                    "For inferential use, at least one variable should be approximately normally distributed (N ≥ 30 mitigates this via CLT).",
+                ]}
+                pitfalls={[
+                    "Reporting r without N or CI — effect sizes are meaningless without sample context.",
+                    "Confusing correlation with causation: r quantifies co-variation, not directional causality.",
+                    "Ignoring restriction of range: a truncated sample artificially reduces r.",
+                    "Using Pearson r on ordinal Likert items without justification — use Spearman or polychoric r instead.",
+                ]}
             />
         </div>
     );

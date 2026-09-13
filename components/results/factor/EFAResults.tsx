@@ -180,10 +180,34 @@ export const EFAResults = React.memo(function EFAResults({ results, columns, onP
                 results={efaData}
             />
 
-            <ScientificNote 
-                insight="Phân tích Nhân tố Khám phá (EFA) giúp thu gọn nhiều biến quan sát thành một vài nhân tố cốt lõi. Hệ số KMO > 0.5 và kiểm định Bartlett có ý nghĩa (p < 0.05) xác nhận dữ liệu phù hợp để gom nhóm. Ma trận xoay (Rotation) tối ưu hóa việc phân nhóm để dễ diễn giải."
-                citation="Hair et al., 2010; Kaiser, 1974"
-                reference="Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2010). Multivariate Data Analysis. | Kaiser, H. F. (1974). An index of factorial simplicity. Psychometrika."
+            <ScientificNote
+                insight="Exploratory Factor Analysis (EFA) identifies the underlying latent structure of a set of observed variables by estimating factor loadings — the correlations between each item and each latent dimension. KMO ≥ .70 (meritorious) and a significant Bartlett's test confirm that the correlation matrix is factorable. Factor retention should be guided by Parallel Analysis rather than the Kaiser criterion (eigenvalue > 1) alone, as the latter tends to over-extract (Zwick & Velicer, 1986). Communalities h² < .40 indicate an item is poorly represented by the factor solution and should be considered for removal. Orthogonal rotation (Varimax) assumes uncorrelated factors; oblique rotation (Promax, Oblimin) is more appropriate when factors are theoretically related."
+                citation="Hair et al., 2019; Kaiser, 1974; Zwick & Velicer, 1986"
+                reference={[
+                    "Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2019). Multivariate data analysis (8th ed.). Cengage Learning.",
+                    "Kaiser, H. F. (1974). An index of factorial simplicity. Psychometrika, 39(1), 31–36.",
+                    "Zwick, W. R., & Velicer, W. F. (1986). Comparison of five rules for determining the number of components to retain. Psychological Bulletin, 99(3), 432–442.",
+                ]}
+                thresholds={[
+                    { label: 'KMO ≥ .90', value: 'Marvelous', status: 'good' },
+                    { label: 'KMO ≥ .70', value: 'Meritorious', status: 'good' },
+                    { label: 'KMO ≥ .60', value: 'Mediocre', status: 'acceptable' },
+                    { label: 'KMO < .60', value: 'Unacceptable', status: 'warn' },
+                    { label: 'Loading', value: '≥ .40 to retain item', status: 'acceptable' },
+                    { label: 'Variance', value: '≥ 50% cumulative', status: 'acceptable' },
+                ]}
+                assumptions={[
+                    "Variables are measured at interval/ratio level (or ordered categorical with polychoric correlation).",
+                    "Adequate sample size: N ≥ 10 per item, minimum N ≥ 100–200; larger N yields more stable factor solutions.",
+                    "The correlation matrix contains sufficient shared variance — confirmed by KMO and Bartlett's test.",
+                    "The relationship between observed variables and factors is approximately linear.",
+                ]}
+                pitfalls={[
+                    "Using Kaiser criterion (eigenvalue > 1) alone for factor retention — Parallel Analysis is the current empirical standard.",
+                    "Accepting cross-loadings > .32 without theoretical justification — they indicate factorial complexity and reduce interpretability.",
+                    "Treating EFA factor scores as if they were measured without error in subsequent analyses.",
+                    "Not reporting the rotation method and extraction method — both affect loadings and must be disclosed.",
+                ]}
             />
 
 

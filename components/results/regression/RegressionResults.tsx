@@ -54,7 +54,7 @@ export const RegressionResults = React.memo(function RegressionResults({ results
                 </div>
                 <h4 className="font-black text-xs uppercase tracking-[0.3em] mb-4 opacity-80 flex items-center gap-2">
                     <Info className="w-3 h-3" />
-                    Regression Equation (Phương trình hồi quy)
+                    Regression Equation
                 </h4>
                 <div className="text-xl md:text-2xl font-mono font-black break-all leading-relaxed">
                     {equation}
@@ -64,7 +64,7 @@ export const RegressionResults = React.memo(function RegressionResults({ results
             {/* Model Summary Table */}
             <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
-                    <h3 className="text-sm font-bold text-blue-900 uppercase">Model Summary (Tóm tắt mô hình)</h3>
+                    <h3 className="text-sm font-bold text-blue-900 uppercase">Model Summary</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-slate-700">
@@ -126,7 +126,7 @@ export const RegressionResults = React.memo(function RegressionResults({ results
             {/* Coefficients Table */}
             <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
-                    <h3 className="text-sm font-bold text-blue-900 uppercase">Coefficients (Hệ số hồi quy)</h3>
+                    <h3 className="text-sm font-bold text-blue-900 uppercase">Coefficients</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-slate-700">
@@ -179,10 +179,35 @@ export const RegressionResults = React.memo(function RegressionResults({ results
                 }}
             />
 
-            <ScientificNote 
-                insight="Hồi quy Đa biến đánh giá mức độ giải thích và tác động của các biến độc lập lên biến phụ thuộc. Adjusted R-squared cho biết % sự biến thiên của biến phụ thuộc được giải thích bởi mô hình. VIF < 5 (hoặc < 10) khẳng định mô hình không bị vi phạm giả định đa cộng tuyến."
-                citation="Field, 2013"
-                reference="Field, A. (2013). Discovering Statistics Using IBM SPSS Statistics. Sage."
+            <ScientificNote
+                insight="Multiple linear regression models the linear relationship between a continuous outcome and two or more predictors, estimating each predictor's unique contribution (B) while holding others constant. Adjusted R² is preferred over R² for reporting explanatory power as it penalises for additional predictors. For each significant predictor, report both B (unstandardized, in original units) and β (standardized, for comparing relative importance). The F-test assesses overall model significance; individual predictors are evaluated via t-statistics. Key assumptions must be evaluated: normality of residuals (Shapiro-Wilk), homoscedasticity (Breusch-Pagan or residual plots), independence (Durbin-Watson ≈ 2), and absence of severe multicollinearity (VIF < 5; Tolerance > 0.20)."
+                citation="Cohen et al., 2003; Field, 2018; O'Brien, 2007"
+                reference={[
+                    "Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). Applied multiple regression/correlation analysis for the behavioral sciences (3rd ed.). Lawrence Erlbaum Associates.",
+                    "Field, A. (2018). Discovering statistics using IBM SPSS Statistics (5th ed.). SAGE Publications.",
+                    "O'Brien, R. M. (2007). A caution regarding rules of thumb for variance inflation factors. Quality & Quantity, 41(5), 673–690.",
+                ]}
+                thresholds={[
+                    { label: 'VIF', value: '< 5 preferred / < 10 max', status: 'good' },
+                    { label: 'Tolerance', value: '> 0.20', status: 'good' },
+                    { label: 'Durbin-Watson', value: '1.5–2.5 (independence)', status: 'acceptable' },
+                    { label: 'Small f²', value: '.02 (R² ≈ .02)', status: 'acceptable' },
+                    { label: 'Medium f²', value: '.15 (R² ≈ .13)', status: 'acceptable' },
+                    { label: 'Large f²', value: '.35 (R² ≈ .26)', status: 'good' },
+                ]}
+                assumptions={[
+                    "Linearity: the relationship between each predictor and outcome is linear — check partial regression plots.",
+                    "Independence of residuals: Durbin-Watson statistic near 2.0; critical for time-series or hierarchical data.",
+                    "Homoscedasticity: residual variance is constant across fitted values — inspect residual-vs-fitted plot.",
+                    "Normality of residuals (not of variables): Shapiro-Wilk on standardized residuals, or P-P plot.",
+                    "No severe multicollinearity: VIF < 5 for all predictors; consider ridge regression or PCA if VIF ≥ 10.",
+                ]}
+                pitfalls={[
+                    "Interpreting B without considering the measurement scale — standardized β is needed to compare predictor importance.",
+                    "Entering all available predictors without theory-driven selection — capitalization on chance increases with K predictors.",
+                    "Ignoring influential observations: Cook's D > 4/N flags potential influence points that may distort coefficients.",
+                    "Reporting R² without adjusted R² — R² always increases with additional predictors regardless of true predictive value.",
+                ]}
             />
         </div>
     );

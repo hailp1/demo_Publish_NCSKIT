@@ -70,7 +70,7 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                         <Database className="w-4 h-4 text-blue-600" />
-                        ANOVA Summary Table (Bảng Kết quả Phương sai)
+                        ANOVA Summary Table
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -87,7 +87,7 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                         </thead>
                         <tbody className="divide-y divide-blue-50">
                             <tr className="hover:bg-blue-50/30 transition-colors">
-                                <td className="py-5 px-6 text-sm font-bold text-blue-800">Between Groups (Giữa các nhóm)</td>
+                                <td className="py-5 px-6 text-sm font-bold text-blue-800">Between Groups</td>
                                 <td className="py-5 px-4 text-sm text-right font-mono">{displayResults.ssBetween?.toFixed(3)}</td>
                                 <td className="py-5 px-4 text-sm text-center font-bold">{displayResults.dfBetween}</td>
                                 <td className="py-5 px-4 text-sm text-right font-mono">{displayResults.msBetween?.toFixed(3)}</td>
@@ -97,14 +97,14 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                                 </td>
                             </tr>
                              <tr className="hover:bg-blue-50/30 transition-colors">
-                                <td className="py-5 px-6 text-sm italic text-slate-800">Within Groups (Trong nội bộ nhóm)</td>
+                                <td className="py-5 px-6 text-sm italic text-slate-800">Within Groups</td>
                                 <td className="py-5 px-4 text-sm text-right font-mono text-slate-900">{displayResults.ssWithin?.toFixed(3)}</td>
                                 <td className="py-5 px-4 text-sm text-center font-bold text-slate-900">{displayResults.dfWithin}</td>
                                 <td className="py-5 px-4 text-sm text-right font-mono text-slate-900">{displayResults.msWithin?.toFixed(3)}</td>
                                 <td className="py-5 px-4" colSpan={2}></td>
                             </tr>
                             <tr className="bg-slate-50/80 font-bold border-t border-blue-100">
-                                <td className="py-5 px-6 text-sm text-blue-900">Total (Tổng cộng)</td>
+                                <td className="py-5 px-6 text-sm text-blue-900">Total</td>
                                 <td className="py-5 px-4 text-sm text-right font-mono text-blue-900">{(displayResults.ssBetween + displayResults.ssWithin)?.toFixed(3)}</td>
                                 <td className="py-5 px-4 text-sm text-center text-blue-900">{(displayResults.dfBetween + displayResults.dfWithin)}</td>
                                 <td colSpan={3}></td>
@@ -120,14 +120,14 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                     <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
                         <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                             <BarChart className="w-4 h-4 text-blue-600" />
-                            Group Means & Descriptives (Giá trị Trung bình theo Nhóm)
+                            Group Means & Descriptives
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse text-slate-700">
                             <thead className="bg-blue-50/50 border-y border-blue-100">
                                 <tr>
-                                    <th className="py-4 px-6 text-xs font-black text-blue-900 uppercase">Group (Nhóm)</th>
+                                    <th className="py-4 px-6 text-xs font-black text-blue-900 uppercase">Group</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Mean</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Status</th>
                                 </tr>
@@ -150,7 +150,7 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                                     </tr>
                                 ))}
                                 <tr className="bg-blue-50/20 font-black border-t border-blue-100">
-                                    <td className="py-4 px-6 text-sm text-blue-900 uppercase">Grand Mean (Tổng thể)</td>
+                                    <td className="py-4 px-6 text-sm text-blue-900 uppercase">Grand Mean</td>
                                     <td className="py-4 px-4 text-sm text-right font-mono text-blue-900">{displayResults.grandMean?.toFixed(3)}</td>
                                     <td></td>
                                 </tr>
@@ -166,14 +166,14 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                     <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
                         <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                             <Activity className="w-4 h-4 text-blue-600" />
-                            Post-Hoc Tests (Kiểm định so sánh cặp - Tukey HSD/Games-Howell)
+                            Post-Hoc Pairwise Comparisons (Tukey HSD / Games-Howell)
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse text-slate-700">
                             <thead className="bg-blue-50/50 border-y border-blue-100">
                                 <tr>
-                                    <th className="py-4 px-6 text-xs font-black text-blue-900 uppercase">Comparison (Cặp so sánh)</th>
+                                    <th className="py-4 px-6 text-xs font-black text-blue-900 uppercase">Comparison</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Difference</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Sig. (p-adj)</th>
                                     <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Interpretation</th>
@@ -193,9 +193,9 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                                             </td>
                                             <td className="py-4 px-4 text-sm text-right font-medium">
                                                 {isSig ? (
-                                                    <span className="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10px] uppercase font-black">Khác biệt</span>
+                                                    <span className="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10px] uppercase font-black">Significant</span>
                                                 ) : (
-                                                    <span className="text-slate-400">Không khác biệt</span>
+                                                    <span className="text-slate-400 text-[10px] uppercase font-medium">n.s.</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -217,8 +217,8 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
                 analysisType="anova"
                 results={displayResults}
                 variableNames={{
-                    targetVar: columns && columns.length > 0 ? columns[0] : 'Biến phụ thuộc',
-                    factorVar: columns && columns.length > 1 ? columns[1] : 'Biến phân nhóm'
+                    targetVar: columns && columns.length > 0 ? columns[0] : 'Dependent Variable',
+                    factorVar: columns && columns.length > 1 ? columns[1] : 'Grouping Variable'
                 }}
             />
 
@@ -227,32 +227,54 @@ export const ANOVAResults = React.memo(function ANOVAResults({ results, columns,
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`p-6 rounded-xl border ${displayResults.assumptionCheckP >= 0.05 ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>
                     <h4 className={`text-xs font-black uppercase mb-3 ${displayResults.assumptionCheckP >= 0.05 ? 'text-emerald-800' : 'text-amber-800'}`}>
-                        Kiểm định tính đồng nhất phương sai
+                        Homogeneity of Variance (Levene&apos;s Test)
                     </h4>
                     <p className="text-sm font-medium text-slate-700">
                         {displayResults.assumptionCheckP >= 0.05 
-                            ? `Phương sai đồng nhất (p = ${displayResults.assumptionCheckP.toFixed(4)}). Giả định của ANOVA được thỏa mãn.`
-                            : `Phương sai KHÔNG đồng nhất (p = ${displayResults.assumptionCheckP.toFixed(4)}). Đã hiệu chỉnh theo Welch ANOVA.`
+                            ? `Variances are homogeneous (p = ${displayResults.assumptionCheckP.toFixed(4)}). ANOVA assumption satisfied.`
+                            : `Variances are NOT homogeneous (p = ${displayResults.assumptionCheckP.toFixed(4)}). Welch's ANOVA correction applied.`
                         }
                     </p>
                 </div>
                 <div className={`p-6 rounded-xl border ${displayResults.normalityResidP >= 0.05 ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>
                     <h4 className={`text-xs font-black uppercase mb-3 ${displayResults.normalityResidP >= 0.05 ? 'text-emerald-800' : 'text-amber-800'}`}>
-                        Kiểm định phân phối chuẩn phần dư
+                        Normality of Residuals (Shapiro-Wilk)
                     </h4>
                     <p className="text-sm font-medium text-slate-700">
                         {displayResults.normalityResidP >= 0.05 
-                            ? `Phần dư phân phối chuẩn (p = ${displayResults.normalityResidP.toFixed(4)}).`
-                            : `Phần dư vi phạm phân phối chuẩn (p = ${displayResults.normalityResidP.toFixed(4)}).`
+                            ? `Residuals are normally distributed (p = ${displayResults.normalityResidP.toFixed(4)}).`
+                            : `Residuals violate the normality assumption (p = ${displayResults.normalityResidP.toFixed(4)}).`
                         }
                     </p>
                 </div>
             </div>
 
-            <ScientificNote 
-                insight="Kiểm định One-Way ANOVA được sử dụng để so sánh giá trị trung bình của một biến định lượng giữa 3 nhóm phân loại trở lên. Nếu p-value < 0.05, có sự khác biệt ý nghĩa về mặt thống kê giữa ít nhất một cặp nhóm. Kiểm định hậu định (Post-hoc) sẽ chỉ ra chính xác cặp nhóm nào khác biệt."
-                citation="Field, 2013"
-                reference="Field, A. (2013). Discovering Statistics Using IBM SPSS Statistics. Sage."
+            <ScientificNote
+                insight="One-Way ANOVA partitions total variability in a continuous outcome into between-group and within-group components, testing the omnibus null hypothesis that all population group means are equal (H₀: μ₁ = μ₂ = … = μk). A significant F-test warrants post-hoc pairwise comparisons: Tukey HSD when variances are homogeneous, Games-Howell when Levene's test is significant. Reporting must include F(dfBetween, dfWithin), exact p, and η² or ω² as effect size. Note that η² overestimates the population effect in small samples; ω² provides a less biased estimate (Olejnik & Algina, 2003)."
+                citation="Field, 2018; Richardson, 2011; Olejnik & Algina, 2003"
+                reference={[
+                    "Field, A. (2018). Discovering statistics using IBM SPSS Statistics (5th ed.). SAGE Publications.",
+                    "Richardson, J. T. E. (2011). Eta squared and partial eta squared as measures of effect size in educational research. Educational Research Review, 6(2), 135–147.",
+                    "Olejnik, S., & Algina, J. (2003). Generalized eta and omega squared statistics: Measures of effect size for some common research designs. Psychological Methods, 8(4), 434–447.",
+                ]}
+                thresholds={[
+                    { label: 'Small η²', value: '.01–.05', status: 'acceptable' },
+                    { label: 'Medium η²', value: '.06–.13', status: 'acceptable' },
+                    { label: 'Large η²', value: '≥ .14', status: 'good' },
+                    { label: 'Levene p', value: '< .05 → Welch', status: 'warn' },
+                ]}
+                assumptions={[
+                    "Independence of observations — no repeated measures or nested design.",
+                    "Normality of residuals within each group (Shapiro-Wilk on residuals; robust for n ≥ 15 per group).",
+                    "Homogeneity of variance across groups (Levene's test) — use Welch ANOVA if violated.",
+                    "The dependent variable is measured at interval/ratio level.",
+                ]}
+                pitfalls={[
+                    "Stopping at the omnibus F-test without post-hoc comparisons when H₀ is rejected — the F-test identifies that at least one pair differs, not which pairs.",
+                    "Reporting η² without noting it is a sample-specific, positively biased estimate — prefer ω² for publication.",
+                    "Interpreting non-significant F as confirmation of equal means — report equivalence margins or confidence intervals.",
+                    "Using ANOVA when group ns are very unequal without checking robustness via Type III SS.",
+                ]}
             />
         </div>
     );

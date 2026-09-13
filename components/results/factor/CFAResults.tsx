@@ -181,10 +181,33 @@ export const CFAResults = React.memo(function CFAResults({ results, onProceedToS
                 results={results}
             />
 
-            <ScientificNote 
-                insight="Phân tích Nhân tố Khẳng định (CFA) dùng để kiểm định mức độ phù hợp của mô hình đo lường với dữ liệu thực tế. Các chỉ số phù hợp (Fit Indices) như CFI > 0.9 và RMSEA < 0.08 cho thấy cấu trúc nhân tố được giả định là hợp lý."
-                citation="Hu & Bentler, 1999"
-                reference="Hu, L. T., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance structure analysis. Structural Equation Modeling."
+            <ScientificNote
+                insight="Confirmatory Factor Analysis (CFA) tests whether a theoretically specified measurement model — in which observed indicators load on pre-defined latent constructs — is consistent with the observed covariance matrix. Model fit is evaluated using a battery of indices rather than any single criterion: CFI and TLI ≥ .95 indicate close fit (Hu & Bentler, 1999); RMSEA ≤ .06 with a 90% CI upper bound < .08 is preferable; SRMR ≤ .08 indicates acceptable average residual. The chi-square statistic is highly sensitive to N and should not be used as the sole fit criterion. Modification indices (MI > 10) may suggest correlated residuals between items sharing method variance, but post-hoc modifications must be theoretically justified and cross-validated."
+                citation="Hu & Bentler, 1999; Kline, 2016; Brown, 2015"
+                reference={[
+                    "Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance structure analysis. Structural Equation Modeling, 6(1), 1–55. https://doi.org/10.1080/10705519909540118",
+                    "Kline, R. B. (2016). Principles and practice of structural equation modeling (4th ed.). Guilford Press.",
+                    "Brown, T. A. (2015). Confirmatory factor analysis for applied research (2nd ed.). Guilford Press.",
+                ]}
+                thresholds={[
+                    { label: 'CFI / TLI', value: '≥ .95 close / ≥ .90 acceptable', status: 'good' },
+                    { label: 'RMSEA', value: '≤ .06 close / ≤ .08 acceptable', status: 'good' },
+                    { label: 'SRMR', value: '≤ .08', status: 'good' },
+                    { label: 'χ²/df', value: '≤ 3.0 acceptable / ≤ 2.0 good', status: 'acceptable' },
+                    { label: 'Loading', value: '≥ .50 (≥ .70 preferred)', status: 'acceptable' },
+                ]}
+                assumptions={[
+                    "Multivariate normality of indicators — assess with Mardia's coefficient; use MLR or WLSMV estimator if violated.",
+                    "Adequate sample size: rule of thumb N ≥ 200, or N:parameter ratio ≥ 10:1.",
+                    "The factor structure is correctly specified — under-specification causes fit inflation, over-specification causes model-data fit paradoxes.",
+                    "No severe multivariate outliers — Mahalanobis D² with p < .001 cutoff.",
+                ]}
+                pitfalls={[
+                    "Relying solely on chi-square for fit evaluation — it is almost always significant for N > 200 regardless of substantive fit.",
+                    "Accepting a model with CFI ≥ .90 and RMSEA ≤ .08 as 'good fit' — these are acceptable thresholds, not excellent.",
+                    "Adding correlated residuals based on MI without theoretical justification — this capitalizes on chance and inflates fit artificially.",
+                    "Ignoring AVE and CR: a well-fitting CFA model still requires convergent validity evidence (AVE ≥ .50, CR ≥ .70).",
+                ]}
             />
 
             {/* Workflow: Next Step Button */}

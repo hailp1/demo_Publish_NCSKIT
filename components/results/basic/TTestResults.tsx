@@ -80,7 +80,7 @@ export const TTestResults = React.memo(function TTestResults({ results, columns,
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                         <Activity className="w-4 h-4 text-blue-600" />
-                        Independent Samples Test (Kiểm định T-Test độc lập)
+                        Independent Samples Test
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -98,7 +98,6 @@ export const TTestResults = React.memo(function TTestResults({ results, columns,
                             <tr className="hover:bg-blue-50/30 transition-colors">
                                 <td className="py-5 px-6">
                                     <div className="text-sm font-bold text-blue-800">{leveneSig ? "Equal variances not assumed (Welch)" : "Equal variances assumed"}</div>
-                                    <div className="text-[10px] text-slate-400 italic">{leveneSig ? "Giả định phương sai không bằng nhau" : "Giả định phương sai bằng nhau"}</div>
                                 </td>
                                 <td className="py-5 px-4 text-sm text-right font-mono">{formatNum(results.tStatistic, 3)}</td>
                                 <td className="py-5 px-4 text-sm text-center font-bold">{formatNum(results.df, 2)}</td>
@@ -117,7 +116,7 @@ export const TTestResults = React.memo(function TTestResults({ results, columns,
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
                     <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                         <BarChart className="w-4 h-4 text-blue-600" />
-                        Group Statistics (Thống kê Nhóm)
+                        Group Statistics
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -174,10 +173,32 @@ export const TTestResults = React.memo(function TTestResults({ results, columns,
                 </div>
             </div>
 
-            <ScientificNote 
-                insight="Kiểm định Independent T-Test dùng để so sánh giá trị trung bình của một biến định lượng giữa 2 nhóm độc lập. p-value < 0.05 khẳng định sự khác biệt giữa hai nhóm có ý nghĩa thống kê, không phải do ngẫu nhiên. Kiểm định Levene (Levene's Test) dùng để xem phương sai 2 nhóm có đồng nhất hay không để chọn kết quả T-Test phù hợp."
-                citation="Field, 2013"
-                reference="Field, A. (2013). Discovering Statistics Using IBM SPSS Statistics. Sage."
+            <ScientificNote
+                insight="The independent-samples t-test evaluates whether the population means of a continuous dependent variable differ between two independent groups. Levene's test determines whether to report the equal-variances-assumed (Student's t) or equal-variances-not-assumed (Welch's t) variant — Welch's version is recommended by default (Delacre et al., 2017) as it controls Type I error better under heteroscedasticity. Always report the test statistic, degrees of freedom, exact p-value, mean difference with 95% CI, and Cohen's d as the effect size. When normality is violated (Shapiro-Wilk p < .05), consider the Mann-Whitney U test as a non-parametric alternative."
+                citation="Field, 2018; Delacre et al., 2017; Cohen, 1988"
+                reference={[
+                    "Field, A. (2018). Discovering statistics using IBM SPSS Statistics (5th ed.). SAGE Publications.",
+                    "Delacre, M., Lakens, D., & Leys, C. (2017). Why psychologists should by default use Welch's t-test instead of Student's t-test. International Review of Social Psychology, 30(1), 92–101.",
+                    "Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Lawrence Erlbaum Associates.",
+                ]}
+                thresholds={[
+                    { label: 'Small d', value: '.20–.49', status: 'acceptable' },
+                    { label: 'Medium d', value: '.50–.79', status: 'acceptable' },
+                    { label: 'Large d', value: '≥ .80', status: 'good' },
+                    { label: 'Levene p', value: '< .05 → Welch', status: 'warn' },
+                ]}
+                assumptions={[
+                    "Independence of observations — each participant belongs to exactly one group.",
+                    "The dependent variable is approximately normally distributed within each group (Shapiro-Wilk; relaxed for n > 30 per group by CLT).",
+                    "Homogeneity of variance (Levene's test) — use Welch's correction if violated.",
+                    "The dependent variable is measured at the interval or ratio level.",
+                ]}
+                pitfalls={[
+                    "Reporting only p-value without effect size (d) — statistical significance is N-dependent and does not convey practical importance.",
+                    "Interpreting a non-significant result as 'no difference' — report 95% CI to bound the plausible range of effects.",
+                    "Applying Student's t when Levene's test is significant — always use Welch's t under heteroscedasticity.",
+                    "Violating independence by using paired data in an independent-samples framework.",
+                ]}
             />
         </div>
     );

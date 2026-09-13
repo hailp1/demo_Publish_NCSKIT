@@ -223,10 +223,32 @@ export const SEMResults = React.memo(function SEMResults({ results }: SEMResults
                 </Card>
             )}
 
-            <ScientificNote 
-                insight="Mô hình Cấu trúc (CB-SEM) cho phép kiểm định đồng thời các giả thuyết về mối quan hệ nhân quả giữa các nhân tố. Giá trị P-value < 0.05 khẳng định giả thuyết tác động có ý nghĩa thống kê, và Beta (Std. Est) cho biết độ lớn của tác động."
-                citation="Kline, 2015"
-                reference="Kline, R. B. (2015). Principles and Practice of Structural Equation Modeling. Guilford publications."
+            <ScientificNote
+                insight="Covariance-Based SEM (CB-SEM) simultaneously estimates a measurement model (CFA) and a structural model (path relationships among latent constructs), minimizing the discrepancy between the model-implied and observed covariance matrices. CB-SEM is theory-confirmatory by design: it tests a pre-specified causal structure against the data. Full reporting requires both measurement model fit indices (CFI, TLI, RMSEA, SRMR) and structural model results (standardized path coefficients β, SE, z-statistics, 95% CI, and p-values). Indirect effects (mediation) require bootstrapping. The chi-square difference test (Δχ², Δdf) is used for nested model comparison. CB-SEM assumes multivariate normality — MLR (Satorra-Bentler) or WLSMV estimators should be used when this assumption is violated."
+                citation="Kline, 2016; Byrne, 2016; Hu & Bentler, 1999"
+                reference={[
+                    "Kline, R. B. (2016). Principles and practice of structural equation modeling (4th ed.). Guilford Press.",
+                    "Byrne, B. M. (2016). Structural equation modeling with AMOS (3rd ed.). Routledge.",
+                    "Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance structure analysis. Structural Equation Modeling, 6(1), 1–55. https://doi.org/10.1080/10705519909540118",
+                ]}
+                thresholds={[
+                    { label: 'CFI / TLI', value: '≥ .95 close / ≥ .90 acceptable', status: 'good' },
+                    { label: 'RMSEA', value: '≤ .06 close / ≤ .08 acceptable', status: 'good' },
+                    { label: 'SRMR', value: '≤ .08', status: 'good' },
+                    { label: 'Path β', value: '|β| ≥ .10 small / ≥ .30 med', status: 'acceptable' },
+                ]}
+                assumptions={[
+                    "Multivariate normality of observed indicators — test with Mardia's multivariate kurtosis; use MLR if violated.",
+                    "Adequate sample size: N ≥ 200 as a guideline; power analysis via Monte Carlo simulation for complex models.",
+                    "The model is identified: degrees of freedom ≥ 0; over-identified models (df > 0) are preferred.",
+                    "Measurement invariance across groups must be established before interpreting between-group structural differences.",
+                ]}
+                pitfalls={[
+                    "Reporting only standardized β without unstandardized B — the latter is needed for replication and meta-analysis.",
+                    "Modifying the model post-hoc using MI without cross-validation on an independent sample.",
+                    "Conflating statistical significance with practical significance: a significant path with β = .05 has negligible explanatory value.",
+                    "Not distinguishing CB-SEM (covariance-based) from PLS-SEM (variance-based) — they answer different research questions and should not be used interchangeably.",
+                ]}
             />
         </div>
     );

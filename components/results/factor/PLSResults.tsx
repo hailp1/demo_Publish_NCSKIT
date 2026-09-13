@@ -482,10 +482,34 @@ export const PLSResults: React.FC<PLSResultsProps> = ({ results }) => {
                 </Card>
             )}
 
-            <ScientificNote 
-                insight="PLS-SEM là phương pháp ước lượng cấu trúc linh hoạt, không yêu cầu giả định phân phối chuẩn và đặc biệt hiệu quả với cỡ mẫu nhỏ hoặc mô hình phức tạp. Bootstrapping được sử dụng để ước lượng sai số chuẩn và kiểm định ý nghĩa thống kê của các hệ số đường dẫn."
-                citation="Hair, Hult, Ringle & Sarstedt, 2017"
-                reference="Hair, J. F., Hult, G. T. M., Ringle, C. M., & Sarstedt, M. (2017). A Primer on Partial Least Squares Structural Equation Modeling (PLS-SEM). Sage."
+            <ScientificNote
+                insight="Partial Least Squares SEM (PLS-SEM) estimates latent variable scores by maximizing the explained variance of endogenous constructs (prediction-oriented), in contrast to CB-SEM which minimizes the discrepancy between observed and model-implied covariance matrices. PLS-SEM is appropriate when the research objective is prediction, the model is complex, sample sizes are small, or distributional assumptions of CB-SEM cannot be met. Measurement model evaluation proceeds in two stages: (1) reliability (Cronbach's α ≥ .70, ρA, ρC ≥ .70) and convergent validity (AVE ≥ .50); (2) discriminant validity via Fornell-Larcker criterion and HTMT < .85. Structural model assessment requires bootstrapping (≥ 5,000 subsamples) to obtain standard errors and p-values for path coefficients. Effect sizes f² ≥ .02 (small), ≥ .15 (medium), ≥ .35 (large) and Q² > 0 (predictive relevance) complete the evaluation."
+                citation="Hair et al., 2017; Henseler et al., 2015; Fornell & Larcker, 1981"
+                reference={[
+                    "Hair, J. F., Hult, G. T. M., Ringle, C. M., & Sarstedt, M. (2017). A primer on partial least squares structural equation modeling (PLS-SEM) (2nd ed.). SAGE Publications.",
+                    "Henseler, J., Ringle, C. M., & Sarstedt, M. (2015). A new criterion for assessing discriminant validity in variance-based SEM. Journal of the Academy of Marketing Science, 43(1), 115–135. https://doi.org/10.1007/s11747-014-0403-8",
+                    "Fornell, C., & Larcker, D. F. (1981). Evaluating structural equation models with unobservable variables and measurement error. Journal of Marketing Research, 18(1), 39–50. https://doi.org/10.1177/002224378101800104",
+                ]}
+                thresholds={[
+                    { label: 'Cronbach α / ρC', value: '≥ .70', status: 'good' },
+                    { label: 'AVE', value: '≥ .50 (convergent validity)', status: 'good' },
+                    { label: 'HTMT', value: '< .85 (strict) / < .90', status: 'good' },
+                    { label: 'R²', value: '≥ .25 weak / ≥ .50 mod / ≥ .75 subst.', status: 'acceptable' },
+                    { label: 'f²', value: '.02 small / .15 med / .35 large', status: 'acceptable' },
+                    { label: 'Q²', value: '> 0 (predictive relevance)', status: 'good' },
+                ]}
+                assumptions={[
+                    "The research objective is prediction/exploration, not theory confirmation — for theory testing with covariance structure, prefer CB-SEM.",
+                    "Bootstrapping (≥ 5,000 subsamples, bias-corrected) must be used to assess path coefficient significance — PLS-SEM does not assume multivariate normality.",
+                    "All constructs should be reflectively specified unless strong theoretical reasons support a formative measurement model.",
+                    "Common method bias (CMB) should be assessed via Harman's single-factor test or full-collinearity VIF (< 3.3 per Kock, 2015).",
+                ]}
+                pitfalls={[
+                    "Reporting only path coefficients without bootstrapped SE, t-statistics, and 95% CI.",
+                    "Using Fornell-Larcker as the sole discriminant validity criterion — HTMT is more sensitive and is currently the recommended standard.",
+                    "Accepting CR > .95 without caution — very high CR may signal indicator redundancy rather than reliability.",
+                    "Confusing PLS-SEM prediction accuracy (Q²) with OLS R² — they address different aspects of model quality.",
+                ]}
             />
         </div>
     );

@@ -125,10 +125,34 @@ export const LogisticResults = React.memo(function LogisticResults({ results, co
                 }}
             />
 
-            <ScientificNote 
-                insight="Hồi quy Logistic dùng để dự báo một biến phụ thuộc phân loại nhị phân (0/1). Chỉ số Odds Ratio (OR) > 1 cho thấy xác suất xảy ra sự kiện tăng khi biến độc lập tăng. Pseudo R-squared (như Nagelkerke) đánh giá sự phù hợp tổng thể của mô hình."
-                citation="Hosmer, Lemeshow, & Sturdivant, 2013"
-                reference="Hosmer Jr, D. W., Lemeshow, S., & Sturdivant, R. X. (2013). Applied Logistic Regression. John Wiley & Sons."
+            <ScientificNote
+                insight="Binary logistic regression estimates the log-odds of a dichotomous outcome as a linear function of one or more predictors. Coefficients (b) are interpreted as log-odds and exponentiated to yield Odds Ratios (OR): OR > 1 indicates increased odds; OR < 1 indicates decreased odds per one-unit predictor increase. Always report OR with 95% CI — an OR is meaningless without its interval. Model fit is assessed via the Hosmer-Lemeshow goodness-of-fit test (non-significant p desirable), McFadden's pseudo-R² (not equivalent to OLS R²), AUC-ROC ≥ .70 for acceptable discrimination, and the omnibus chi-square likelihood ratio test. Classification accuracy should be supplemented with sensitivity and specificity."
+                citation="Hosmer et al., 2013; McFadden, 1979; Harrell, 2015"
+                reference={[
+                    "Hosmer, D. W., Lemeshow, S., & Sturdivant, R. X. (2013). Applied logistic regression (3rd ed.). Wiley. https://doi.org/10.1002/9781118548387",
+                    "McFadden, D. (1979). Quantitative methods for analyzing travel behaviour of individuals. In D. Hensher & P. Stopher (Eds.), Behavioural travel modelling (pp. 279–318). Croom Helm.",
+                    "Harrell, F. E. (2015). Regression modeling strategies (2nd ed.). Springer.",
+                ]}
+                thresholds={[
+                    { label: 'AUC', value: '.70–.79 acceptable', status: 'acceptable' },
+                    { label: 'AUC', value: '.80–.89 excellent', status: 'good' },
+                    { label: 'McFadden R²', value: '.10–.20 adequate', status: 'acceptable' },
+                    { label: 'McFadden R²', value: '≥ .20 good', status: 'good' },
+                    { label: 'H-L p', value: '> .05 (good fit)', status: 'good' },
+                ]}
+                assumptions={[
+                    "The outcome variable is dichotomous (0/1); for multinomial outcomes use multinomial logistic regression.",
+                    "Independence of observations — logistic regression is sensitive to clustered or repeated-measures data.",
+                    "No severe multicollinearity among predictors (VIF < 5).",
+                    "Adequate cell frequencies: avoid complete separation or near-separation, which causes coefficient inflation.",
+                    "Events-per-variable (EPV) ≥ 10 for stable estimates — low EPV increases overfitting risk.",
+                ]}
+                pitfalls={[
+                    "Reporting only classification accuracy: a model that predicts all cases as the majority class can achieve high accuracy but zero utility.",
+                    "Interpreting OR without CI — a wide CI indicates uncertainty that the point estimate conceals.",
+                    "Applying logistic regression when the rare-events correction (Firth's penalized likelihood) is warranted (outcome rate < 5%).",
+                    "Confusing pseudo-R² with OLS R² — values of .10–.20 for McFadden R² are equivalent to much higher OLS R² and indicate reasonable fit.",
+                ]}
             />
         </div>
 

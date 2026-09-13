@@ -1,70 +1,143 @@
 /**
  * ASIG — factor.ts
  * Interpreters: Cronbach's Alpha / McDonald's Omega, EFA, CFA
+ *
  * All prose conforms to APA 7th Edition reporting standards.
+ * Outputs publication-ready narrative for psychometric and factor-analytic results.
  */
 
 import { formatPValue, formatCoef, formatNum, formatPct, InterpretationResult } from './shared';
 
-// ─── RELIABILITY ANALYSIS ─────────────────────────────────────────────────────
+
+// ─── RELIABILITY ANALYSIS (Cronbach α / McDonald's ω) ────────────────────────
 
 export function interpretCronbachAlpha(params: {
-    scaleName: string;
-    nItems: number;
-    alpha: number;
-    omega?: number;
-    badItems?: string[];
+    scaleName:       string;
+    nItems:          number;
+    alpha:           number;
+    omega?:          number;
+    badItems?:       string[];
     isOmegaPrimary?: boolean;
 }): InterpretationResult {
     const { scaleName, nItems, alpha, omega, badItems, isOmegaPrimary } = params;
 
-    const primaryCoef   = isOmegaPrimary && omega != null ? omega : alpha;
-    const primaryStr    = formatCoef(primaryCoef);
-    const primaryName   = isOmegaPrimary && omega != null
+    const primaryCoef = isOmegaPrimary && omega != null ? omega : alpha;
+    const primaryStr  = formatCoef(primaryCoef);
+    const primaryName = isOmegaPrimary && omega != null
         ? "McDonald's Omega (ω)"
         : "Cronbach's Alpha (α)";
-
-    const alphaStr = formatCoef(alpha);
-    const omegaStr = omega != null ? formatCoef(omega) : '';
+    const alphaStr    = formatCoef(alpha);
+    const omegaStr    = omega != null ? formatCoef(omega) : '';
 
     const details:   string[] = [];
     const warnings:  string[] = [];
+
+    // Build citations depending on mode
     const citations: string[] = isOmegaPrimary
-        ? ['Hayes, A. F., & Coutts, J. J. (2020). Use omega rather than Cronbach\'s alpha for estimating reliability. Communication Methods and Measures, 14(1), 1–24. https://doi.org/10.1080/19312458.2020.1718629']
-        : ['Nunnally, J. C. (1978). Psychometric theory (2nd ed.). McGraw-Hill.'];
+        ? [
+            'Hayes, A. F., & Coutts, J. J. (2020). Use omega rather than Cronbach\'s alpha for estimating reliability. Communication Methods and Measures, 14(1), 1–24. https://doi.org/10.1080/19312458.2020.1718629',
+            'Nunnally, J. C., & Bernstein, I. H. (1994). Psychometric theory (3rd ed.). McGraw-Hill.',
+            'Sijtsma, K. (2009). On the use, the misuse, and the very limited usefulness of Cronbach\'s alpha. Psychometrika, 74(1), 107–120. https://doi.org/10.1007/s11336-008-9101-0',
+          ]
+        : [
+            'Nunnally, J. C., & Bernstein, I. H. (1994). Psychometric theory (3rd ed.). McGraw-Hill.',
+            'Sijtsma, K. (2009). On the use, the misuse, and the very limited usefulness of Cronbach\'s alpha. Psychometrika, 74(1), 107–120. https://doi.org/10.1007/s11336-008-9101-0',
+            'Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2019). Multivariate data analysis (8th ed.). Cengage Learning.',
+          ];
 
+    // Build summary with full methodological context
     let summary = '';
-
     if (primaryCoef >= 0.90) {
-        summary = `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ${primaryName} = ${primaryStr}, indicating excellent internal consistency that exceeds the recommended threshold of .70 (Nunnally, 1978). The scale is considered highly reliable for use in confirmatory research contexts.`;
+        summary =
+            `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ` +
+            `${primaryName} = ${primaryStr}, indicating excellent internal consistency ` +
+            `well above the conventional threshold of .70 (Nunnally & Bernstein, 1994). ` +
+            `The scale demonstrates strong psychometric cohesion and is suitable for ` +
+            `confirmatory research and hypothesis testing.`;
     } else if (primaryCoef >= 0.80) {
-        summary = `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ${primaryName} = ${primaryStr}, demonstrating good internal consistency above the conventional threshold of .70 (Nunnally, 1978). The scale is suitable for confirmatory research.`;
+        summary =
+            `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ` +
+            `${primaryName} = ${primaryStr}, indicating good internal consistency ` +
+            `exceeding the conventional threshold of .70 (Nunnally & Bernstein, 1994). ` +
+            `The scale is suitable for confirmatory research contexts.`;
     } else if (primaryCoef >= 0.70) {
-        summary = `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ${primaryName} = ${primaryStr}, which meets the widely accepted threshold of .70 (Nunnally, 1978). The scale demonstrates adequate internal consistency for research purposes.`;
+        summary =
+            `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ` +
+            `${primaryName} = ${primaryStr}, which meets the widely accepted minimum ` +
+            `threshold of .70 (Nunnally & Bernstein, 1994). The scale demonstrates ` +
+            `adequate internal consistency for research use, though values ≥ .80 ` +
+            `are preferable for published research.`;
     } else if (primaryCoef >= 0.60) {
-        summary = `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ${primaryName} = ${primaryStr}. Although this value falls below the conventional threshold of .70 (Nunnally, 1978), it remains within the acceptable range (.60–.70) for exploratory research (Hair et al., 2010). Caution is advised when interpreting results.`;
-        citations.push('Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2010). Multivariate data analysis (7th ed.). Pearson.');
-        warnings.push(`${primaryName} = ${primaryStr} is below .70. This scale is acceptable for exploratory research only; confirmatory use requires scale refinement.`);
+        summary =
+            `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ` +
+            `${primaryName} = ${primaryStr}. Although this value falls below the ` +
+            `conventional threshold of .70 (Nunnally & Bernstein, 1994), it remains ` +
+            `within the acceptable range (.60–.70) for exploratory research ` +
+            `(Hair et al., 2019). Scale refinement is recommended before confirmatory use. ` +
+            `Examine item-total statistics to identify underperforming items.`;
+        citations.push('Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2019). Multivariate data analysis (8th ed.). Cengage Learning.');
+        warnings.push(
+            `${primaryName} = ${primaryStr} (.60–.70 range) is acceptable for exploratory research only. ` +
+            `Confirmatory use or hypothesis testing requires α / ω ≥ .70. ` +
+            `Review item-total correlations and consider removing items with CITC < .30.`
+        );
     } else {
-        summary = `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ${primaryName} = ${primaryStr}, which falls below the minimum acceptable threshold of .60 (Nunnally, 1978; Hair et al., 2010). The scale does not demonstrate sufficient internal consistency for research use.`;
-        citations.push('Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2010). Multivariate data analysis (7th ed.). Pearson.');
-        warnings.push(`${primaryName} = ${primaryStr} is below the minimum acceptable threshold of .60. Scale revision is strongly recommended before further analysis.`);
+        summary =
+            `Reliability analysis of the "${scaleName}" scale (${nItems} items) yielded ` +
+            `${primaryName} = ${primaryStr}, which falls below the minimum acceptable ` +
+            `threshold of .60 (Nunnally & Bernstein, 1994; Hair et al., 2019). ` +
+            `The scale does not demonstrate sufficient internal consistency for research use. ` +
+            `Substantial item revision or scale reconceptualisation is strongly recommended ` +
+            `before proceeding with any inferential analyses.`;
+        warnings.push(
+            `${primaryName} = ${primaryStr} is critically low (< .60). ` +
+            `This scale should not be used for statistical inference until revised. ` +
+            `Consider qualitative review of item content and re-piloting before further data collection.`
+        );
     }
 
     // Supplementary coefficient
     if (isOmegaPrimary && omega != null) {
-        summary += ` McDonald's Omega was chosen over Cronbach's Alpha as it does not assume tau-equivalence, providing a more accurate estimate of reliability.`;
-        details.push(`Reference Cronbach's Alpha (α) = ${alphaStr}.`);
+        summary +=
+            ` McDonald's Omega was selected as the primary reliability index because it does not ` +
+            `assume tau-equivalence (equal factor loadings), making it a more appropriate ` +
+            `and generally less biased estimator than Cronbach's Alpha for most psychometric scales.`;
+        details.push(`Reference Cronbach's Alpha (α) = ${alphaStr} (reported for comparison).`);
+        details.push(
+            `The difference between ω (${omegaStr}) and α (${alphaStr}) indicates ` +
+            `${Math.abs(primaryCoef - alpha) < 0.02
+                ? 'minimal departure from tau-equivalence — items have approximately equal factor loadings.'
+                : 'meaningful departure from tau-equivalence — items differ in their factor loadings, supporting the use of ω.'}`
+        );
     } else if (!isOmegaPrimary && omega != null && omega > 0) {
-        details.push(`Supplementary McDonald's Omega (ω) = ${omegaStr}, corroborating the internal consistency estimate.`);
+        details.push(
+            `Supplementary McDonald's Omega (ω) = ${omegaStr}. ` +
+            `The difference ω − α = ${formatCoef(omega - alpha)} indicates ` +
+            `${Math.abs(omega - alpha) < 0.02
+                ? 'approximate tau-equivalence.'
+                : 'non-tau-equivalence; ω provides a less biased reliability estimate for this scale.'}`
+        );
     }
 
     // Problematic items
     if (badItems && badItems.length > 0) {
         warnings.push(
-            `The following item(s) produced corrected item-total correlations below .30 and should be considered for removal: ${badItems.join(', ')}. Deletion of these items may improve the overall reliability coefficient.`
+            `Item(s) with corrected item-total correlation (CITC) below .30: ` +
+            `${badItems.join(', ')}. ` +
+            `These items contribute negligible shared variance to the scale and should be ` +
+            `reviewed for content relevance and considered for removal or revision. ` +
+            `Removing poor items typically increases α / ω.`
         );
     }
+
+    details.push(
+        `Internal consistency benchmarks (Nunnally & Bernstein, 1994): ` +
+        `< .60 inadequate; .60–.69 exploratory only; .70–.79 adequate; .80–.89 good; ≥ .90 excellent.`
+    );
+    details.push(
+        `APA 7 reporting: "${scaleName}" (${nItems} items), ${primaryName} = ${primaryStr}` +
+        `${omega != null && !isOmegaPrimary ? `, ω = ${omegaStr}` : ''}.`
+    );
 
     return { summary, details, warnings, citations };
 }
@@ -73,65 +146,121 @@ export function interpretCronbachAlpha(params: {
 // ─── EXPLORATORY FACTOR ANALYSIS ─────────────────────────────────────────────
 
 export function interpretEFA(params: {
-    kmo: number;
-    bartlettP: number;
-    nFactors: number;
-    factorMethod: string;
-    totalVariance?: number;
-    communalities?: { item: string; value: number }[];
+    kmo:             number;
+    bartlettP:       number;
+    nFactors:        number;
+    factorMethod:    string;
+    rotationMethod?: string;
+    totalVariance?:  number;
+    communalities?:  { item: string; value: number }[];
 }): InterpretationResult {
-    const { kmo, bartlettP, nFactors, factorMethod, totalVariance, communalities } = params;
+    const { kmo, bartlettP, nFactors, factorMethod, rotationMethod, totalVariance, communalities } = params;
 
     const details:   string[] = [];
     const warnings:  string[] = [];
     const citations: string[] = [
-        'Kaiser, H. F. (1970). A second generation little jiffy. Psychometrika, 35(4), 401–415.',
-        'Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2010). Multivariate data analysis (7th ed.). Pearson.',
+        'Kaiser, H. F. (1974). An index of factorial simplicity. Psychometrika, 39(1), 31–36.',
+        'Zwick, W. R., & Velicer, W. F. (1986). Comparison of five rules for determining the number of components to retain. Psychological Bulletin, 99(3), 432–442.',
+        'Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2019). Multivariate data analysis (8th ed.). Cengage Learning.',
+        'Fabrigar, L. R., Wegener, D. T., MacCallum, R. C., & Strahan, E. J. (1999). Evaluating the use of exploratory factor analysis in psychological research. Psychological Methods, 4(3), 272–299.',
     ];
 
-    // KMO label
+    // KMO classification per Kaiser (1974)
     let kmoLabel = '';
     if      (kmo >= 0.90) kmoLabel = 'marvellous';
     else if (kmo >= 0.80) kmoLabel = 'meritorious';
     else if (kmo >= 0.70) kmoLabel = 'middling';
     else if (kmo >= 0.60) kmoLabel = 'mediocre';
-    else                   kmoLabel = 'unacceptable';
+    else if (kmo >= 0.50) kmoLabel = 'miserable';
+    else                  kmoLabel = 'unacceptable';
 
     if (kmo < 0.60) {
-        warnings.push(`KMO = ${formatCoef(kmo)} is below .60, indicating that the correlation matrix is not suitable for factor analysis. Data collection should be reviewed before proceeding.`);
+        warnings.push(
+            `KMO = ${formatCoef(kmo)} (${kmoLabel}) falls below the recommended minimum of .60 ` +
+            `(Kaiser, 1974). The inter-item correlations are insufficient for reliable factor extraction. ` +
+            `Data collection procedures and item quality should be reviewed before re-analysing.`
+        );
+    } else if (kmo < 0.70) {
+        warnings.push(
+            `KMO = ${formatCoef(kmo)} (${kmoLabel}) is between .60 and .70. ` +
+            `Factor solutions at this adequacy level should be interpreted with caution ` +
+            `and validated in an independent sample.`
+        );
     }
 
     const bartlettSig = bartlettP < 0.05
         ? `statistically significant (${formatPValue(bartlettP)})`
         : `not statistically significant (${formatPValue(bartlettP)})`;
 
-    const methodLabel = factorMethod === 'parallel'
-        ? 'Parallel Analysis'
+    const extractionLabel = factorMethod === 'parallel'
+        ? 'Parallel Analysis (the recommended retention criterion; Zwick & Velicer, 1986)'
         : factorMethod === 'map'
-            ? 'Minimum Average Partial (MAP)'
-            : 'Kaiser criterion (eigenvalue > 1)';
+            ? 'Minimum Average Partial (MAP; Velicer, 1976)'
+            : 'Kaiser criterion (eigenvalue > 1; Kaiser, 1974; note: this criterion tends to over-extract)';
 
-    let summary = `Prior to conducting Exploratory Factor Analysis (EFA), the Kaiser-Meyer-Olkin (KMO) measure of sampling adequacy was assessed. The obtained value of KMO = ${formatCoef(kmo)} is classified as ${kmoLabel} (Kaiser, 1970). Bartlett's Test of Sphericity was ${bartlettSig}, confirming that the correlation matrix is factorable. EFA using ${methodLabel} extracted ${nFactors} factor${nFactors !== 1 ? 's' : ''}.`;
+    const rotationContext = rotationMethod
+        ? (rotationMethod.toLowerCase().includes('varimax') || rotationMethod.toLowerCase().includes('equamax')
+            ? `${rotationMethod} orthogonal rotation (assumes uncorrelated factors)`
+            : `${rotationMethod} oblique rotation (allows factor intercorrelations; appropriate when factors are theoretically related)`)
+        : 'no rotation applied';
 
-    details.push(`Extraction criterion: ${methodLabel}.`);
-    details.push(`Number of factors retained: ${nFactors}.`);
+    let summary =
+        `Prior to conducting Exploratory Factor Analysis (EFA), the suitability ` +
+        `of the correlation matrix was evaluated. The Kaiser-Meyer-Olkin (KMO) ` +
+        `measure of sampling adequacy yielded KMO = ${formatCoef(kmo)} (${kmoLabel}; Kaiser, 1974). ` +
+        `Bartlett's Test of Sphericity was ${bartlettSig}, ` +
+        `${bartlettP < 0.05 ? 'confirming that the correlation matrix is sufficiently non-identity for factor analysis.' : 'failing to confirm factorability — factor analysis results should not be trusted.'} ` +
+        `EFA was conducted using ${extractionLabel}, ` +
+        `retaining ${nFactors} factor${nFactors !== 1 ? 's' : ''} ` +
+        `with ${rotationContext}.`;
+
+    details.push(`Factor retention criterion: ${extractionLabel}.`);
+    if (rotationMethod) details.push(`Rotation applied: ${rotationContext}.`);
+    details.push(`Factors retained: ${nFactors}.`);
 
     if (totalVariance != null) {
-        details.push(`Total variance explained by the retained factor structure: ${formatPct(totalVariance)}.`);
+        const varPct = formatPct(totalVariance);
+        details.push(
+            `Total variance explained by the ${nFactors}-factor solution: ${varPct}. ` +
+            `${totalVariance >= 0.60
+                ? 'This exceeds the commonly recommended threshold of 60% for social science research (Hair et al., 2019).'
+                : totalVariance >= 0.50
+                    ? 'This meets the minimum 50% threshold (Hair et al., 2019), though higher variance extraction is preferable.'
+                    : 'This falls below the recommended threshold of 50% — consider revising the item pool or retaining additional factors.'}`
+        );
         if (totalVariance < 0.50) {
-            warnings.push(`Total variance explained (${formatPct(totalVariance)}) is below the recommended threshold of 50%. Consider retaining additional factors or revising the item pool.`);
+            warnings.push(
+                `Total variance explained (${varPct}) is below 50% (Hair et al., 2019). ` +
+                `The factor solution may not adequately capture the construct domain. ` +
+                `Consider expanding the item pool or reviewing construct definitions.`
+            );
         }
     }
 
-    // Low communalities
     if (communalities) {
         const lowItems = communalities.filter(c => c.value < 0.40);
         if (lowItems.length > 0) {
             warnings.push(
-                `The following item(s) have communalities below .40 and may not be well-represented by the factor structure: ${lowItems.map(c => `${c.item} (h² = ${formatCoef(c.value)})`).join(', ')}.`
+                `The following item(s) have communalities (h²) below .40, indicating poor ` +
+                `representation by the factor structure: ` +
+                `${lowItems.map(c => `${c.item} (h² = ${formatCoef(c.value)})`).join(', ')}. ` +
+                `Items with h² < .40 should be revised or removed (Hair et al., 2019; Fabrigar et al., 1999).`
             );
         }
     }
+
+    details.push(
+        `Minimum loading for factor assignment: ≥ .40 (Hair et al., 2019); ` +
+        `≥ .50 preferred for sample sizes N < 200.`
+    );
+    details.push(
+        `Cross-loadings (items loading ≥ .32 on two or more factors) compromise ` +
+        `simple structure and should be examined carefully (Tabachnick & Fidell, 2019).`
+    );
+    warnings.push(
+        'EFA is exploratory: the derived factor structure should be replicated in an independent sample ' +
+        'via CFA before being treated as the definitive measurement model.'
+    );
 
     return { summary, details, warnings, citations };
 }
@@ -140,15 +269,15 @@ export function interpretEFA(params: {
 // ─── CONFIRMATORY FACTOR ANALYSIS ────────────────────────────────────────────
 
 export function interpretCFA(params: {
-    chi2: number;
-    df: number;
-    pValue: number;
-    cfi: number;
-    tli: number;
-    rmsea: number;
-    rmseaCILower?: number;
-    rmseaCIUpper?: number;
-    srmr: number;
+    chi2:           number;
+    df:             number;
+    pValue:         number;
+    cfi:            number;
+    tli:            number;
+    rmsea:          number;
+    rmseaCILower?:  number;
+    rmseaCIUpper?:  number;
+    srmr:           number;
 }): InterpretationResult {
     const { chi2, df, pValue, cfi, tli, rmsea, rmseaCILower, rmseaCIUpper, srmr } = params;
 
@@ -157,59 +286,113 @@ export function interpretCFA(params: {
     const citations: string[] = [
         'Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance structure analysis. Structural Equation Modeling, 6(1), 1–55. https://doi.org/10.1080/10705519909540118',
         'Kline, R. B. (2016). Principles and practice of structural equation modeling (4th ed.). Guilford Press.',
+        'Brown, T. A. (2015). Confirmatory factor analysis for applied research (2nd ed.). Guilford Press.',
+        'McNeish, D., & Wolf, M. G. (2023). Dynamic fit index cutoffs for confirmatory factor analysis models. Psychological Methods, 28(1), 61–88.',
     ];
 
-    // Evaluate each index
+    // ── Evaluate fit indices ──────────────────────────────────────────────────
     const cfiBad   = cfi  < 0.90;
     const tliBad   = tli  < 0.90;
     const rmseaBad = rmsea > 0.08;
     const srmrBad  = srmr  > 0.08;
-
     const cfiFine   = cfi  >= 0.95;
     const tliFine   = tli  >= 0.95;
     const rmseaFine = rmsea <= 0.06;
     const srmrFine  = srmr  <= 0.06;
-
     const nBad  = [cfiBad, tliBad, rmseaBad, srmrBad].filter(Boolean).length;
     const nFine = [cfiFine, tliFine, rmseaFine, srmrFine].filter(Boolean).length;
 
-    // χ²/df ratio
-    const chiRatio = df > 0 ? chi2 / df : null;
-
     let fitVerdict = '';
-    if (nBad === 0 && nFine >= 3) {
-        fitVerdict = 'excellent fit';
-    } else if (nBad === 0) {
-        fitVerdict = 'acceptable fit';
-    } else if (nBad <= 1) {
-        fitVerdict = 'marginally acceptable fit';
-    } else {
-        fitVerdict = 'poor fit';
-    }
+    if      (nBad === 0 && nFine >= 3) fitVerdict = 'excellent fit';
+    else if (nBad === 0 && nFine >= 1) fitVerdict = 'good fit';
+    else if (nBad === 0)               fitVerdict = 'acceptable fit';
+    else if (nBad === 1)               fitVerdict = 'marginally acceptable fit';
+    else if (nBad === 2)               fitVerdict = 'poor fit';
+    else                               fitVerdict = 'unacceptable fit';
 
-    // RMSEA CI string
+    // χ² / df ratio
+    const chiRatio = df > 0 ? chi2 / df : null;
+    const chiRatioVerdict = chiRatio == null ? ''
+        : chiRatio <= 2.0 ? ' (good; ≤ 2.0)'
+        : chiRatio <= 3.0 ? ' (acceptable; ≤ 3.0)'
+        : chiRatio <= 5.0 ? ' (questionable; 3.0–5.0)'
+        : ' (poor; > 5.0)';
+
     const rmseaCI = (rmseaCILower != null && rmseaCIUpper != null)
         ? ` [90% CI: ${formatCoef(rmseaCILower)}, ${formatCoef(rmseaCIUpper)}]`
         : '';
 
-    let summary = `Confirmatory Factor Analysis (CFA) was conducted to evaluate model fit. The overall pattern of fit indices indicated ${fitVerdict} with the observed data: CFI = ${formatCoef(cfi)}, TLI = ${formatCoef(tli)}, RMSEA = ${formatCoef(rmsea)}${rmseaCI}, SRMR = ${formatCoef(srmr)} (Hu & Bentler, 1999).`;
+    let summary =
+        `Confirmatory Factor Analysis (CFA) was conducted to evaluate the ` +
+        `pre-specified measurement model. The overall pattern of model fit indices ` +
+        `indicated ${fitVerdict}: ` +
+        `CFI = ${formatCoef(cfi)}, TLI = ${formatCoef(tli)}, ` +
+        `RMSEA = ${formatCoef(rmsea)}${rmseaCI}, SRMR = ${formatCoef(srmr)} ` +
+        `(Hu & Bentler, 1999; Kline, 2016). ` +
+        `${nBad === 0
+            ? 'All reported fit indices satisfy recommended thresholds, supporting the adequacy of the measurement model.'
+            : 'One or more fit indices suggest model-data misfit; model re-specification may be warranted (see warnings).'}`;
 
-    // χ² note (sensitive to N, reported but not used as sole criterion)
-    details.push(`χ²(${df}) = ${formatNum(chi2)}, ${formatPValue(pValue)}${chiRatio != null ? `; χ²/df = ${formatNum(chiRatio)}` : ''}.`);
-    details.push(`CFI = ${formatCoef(cfi)} (threshold ≥ .90; excellent ≥ .95).`);
-    details.push(`TLI = ${formatCoef(tli)} (threshold ≥ .90; excellent ≥ .95).`);
-    details.push(`RMSEA = ${formatCoef(rmsea)}${rmseaCI} (threshold ≤ .08; excellent ≤ .06).`);
-    details.push(`SRMR = ${formatCoef(srmr)} (threshold ≤ .08; excellent ≤ .06).`);
+    // Detailed fit index lines
+    details.push(
+        `χ²(${df}) = ${formatNum(chi2)}, ${formatPValue(pValue)}` +
+        `${chiRatio != null ? `; χ²/df = ${formatNum(chiRatio)}${chiRatioVerdict}` : ''}. ` +
+        `Note: χ² is sensitive to sample size (significant for N > ~200 even with good fit); ` +
+        `use it as one of multiple criteria (Kline, 2016).`
+    );
+    details.push(
+        `CFI = ${formatCoef(cfi)} ` +
+        `(${cfiFine ? 'excellent ≥ .95' : cfiBad ? 'below minimum .90' : 'acceptable .90–.94'}; ` +
+        `threshold: ≥ .95 close fit, ≥ .90 acceptable; Hu & Bentler, 1999).`
+    );
+    details.push(
+        `TLI = ${formatCoef(tli)} ` +
+        `(${tliFine ? 'excellent ≥ .95' : tliBad ? 'below minimum .90' : 'acceptable .90–.94'}; ` +
+        `threshold: ≥ .95 close fit, ≥ .90 acceptable).`
+    );
+    details.push(
+        `RMSEA = ${formatCoef(rmsea)}${rmseaCI} ` +
+        `(${rmseaFine ? 'excellent ≤ .06' : rmseaBad ? 'exceeds .08 limit' : 'acceptable .06–.08'}; ` +
+        `threshold: ≤ .06 close fit, ≤ .08 acceptable; 90% CI upper bound < .08 preferred).`
+    );
+    details.push(
+        `SRMR = ${formatCoef(srmr)} ` +
+        `(${srmrFine ? 'excellent ≤ .06' : srmrBad ? 'exceeds .08 limit' : 'acceptable .06–.08'}; ` +
+        `threshold: ≤ .08; represents average absolute standardised residual).`
+    );
 
-    // Specific warnings
-    if (cfiBad)   warnings.push(`CFI = ${formatCoef(cfi)} falls below the recommended threshold of .90 (Hu & Bentler, 1999).`);
-    if (tliBad)   warnings.push(`TLI = ${formatCoef(tli)} falls below the recommended threshold of .90.`);
-    if (rmseaBad) warnings.push(`RMSEA = ${formatCoef(rmsea)} exceeds the recommended upper limit of .08. Model re-specification (e.g., correlated residuals based on modification indices) may be warranted.`);
-    if (srmrBad)  warnings.push(`SRMR = ${formatCoef(srmr)} exceeds the recommended upper limit of .08, suggesting systematic residual misfit.`);
-
-    if (pValue > 0.05) {
-        details.push(`The non-significant χ² (${formatPValue(pValue)}) suggests the model closely approximates the observed covariance structure; however, χ² is highly sensitive to sample size and should not be the sole basis for model evaluation.`);
+    if (pValue < 0.05 && nBad === 0) {
+        details.push(
+            `The significant χ² (${formatPValue(pValue)}) likely reflects large sample size ` +
+            `sensitivity rather than substantive misfit — the incremental fit indices ` +
+            `(CFI, TLI, RMSEA, SRMR) all indicate acceptable or better fit.`
+        );
+    } else if (pValue > 0.05) {
+        details.push(
+            `The non-significant χ² (${formatPValue(pValue)}) suggests the model covariance ` +
+            `structure closely approximates the observed matrix; however, interpret with caution ` +
+            `as this may reflect low statistical power (small N or df).`
+        );
     }
+
+    // Specific warnings for failing indices
+    if (cfiBad)   warnings.push(`CFI = ${formatCoef(cfi)} is below .90 (Hu & Bentler, 1999). Model re-specification guided by theoretical reasoning and modification indices is recommended.`);
+    if (tliBad)   warnings.push(`TLI = ${formatCoef(tli)} is below .90. TLI penalises model complexity; consider whether the model is over-parameterised.`);
+    if (rmseaBad) warnings.push(`RMSEA = ${formatCoef(rmsea)} exceeds the .08 upper limit (Hu & Bentler, 1999). Inspect modification indices and consider freeing theoretically justified parameters (e.g., correlated residuals for same-method items).`);
+    if (srmrBad)  warnings.push(`SRMR = ${formatCoef(srmr)} exceeds .08, indicating systematic residual covariance misfit. Examine the residual correlation matrix for patterns.`);
+
+    if (nBad > 0) {
+        warnings.push(
+            'Important: post-hoc model modifications (e.g., adding correlated residuals based solely on MIs) ' +
+            'inflate fit and should not be applied without theoretical justification. Cross-validate any modified model.'
+        );
+    }
+
+    details.push(
+        'Beyond fit indices, convergent validity (AVE ≥ .50) and discriminant validity ' +
+        '(HTMT < .85 or Fornell-Larcker criterion) should be assessed to fully evaluate ' +
+        'the measurement model (Brown, 2015).'
+    );
 
     return { summary, details, warnings, citations };
 }

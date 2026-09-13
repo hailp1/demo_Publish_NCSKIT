@@ -31,18 +31,19 @@ export const TwoWayANOVAResults = React.memo(function TwoWayANOVAResults({ resul
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                         <Database className="w-4 h-4 text-blue-600" />
-                        Two-Way ANOVA Table (Bảng phương sai hai nhân tố)
+                        Two-Way ANOVA Table
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-slate-700">
                         <thead className="bg-blue-50/50 border-y border-blue-100">
                             <tr>
-                                <th className="py-4 px-6 text-xs font-black text-blue-900 uppercase">Source (Nguồn tác động)</th>
+                                <th className="py-4 px-6 text-xs font-black text-blue-900 uppercase">Source</th>
                                 <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-center">df</th>
-                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Sum of Squares</th>
-                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right text-blue-600">F-value</th>
-                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Sig. (p)</th>
+                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Type III SS</th>
+                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">MS</th>
+                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right text-blue-600">F</th>
+                                <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">p</th>
                                 <th className="py-4 px-4 text-xs font-black text-blue-900 uppercase text-right">Partial η²</th>
                             </tr>
                         </thead>
@@ -59,12 +60,14 @@ export const TwoWayANOVAResults = React.memo(function TwoWayANOVAResults({ resul
                                         </td>
                                         <td className="py-5 px-4 text-sm text-center font-bold">{row.df}</td>
                                         <td className="py-5 px-4 text-sm text-right font-mono">{row.ss?.toFixed(3)}</td>
+                                        <td className="py-5 px-4 text-sm text-right font-mono text-slate-600">
+                                            {!isResiduals && row.df > 0 ? (row.ss / row.df).toFixed(3) : row.ms?.toFixed(3) || ''}
+                                        </td>
                                         <td className="py-5 px-4 text-sm text-right font-black text-blue-900">
                                             {!isResiduals ? row.f?.toFixed(3) : ''}
                                         </td>
                                         <td className={`py-5 px-4 text-sm text-right font-black ${isSignificant ? 'text-blue-600 underline underline-offset-4' : 'text-slate-400'}`}>
-                                            {!isResiduals ? (row.p < 0.001 ? '< .001' : row.p?.toFixed(4)) : ''}
-                                            {isSignificant ? ' (Sig.)' : ''}
+                                            {!isResiduals ? (row.p < 0.001 ? '< .001' : row.p?.toFixed(3)) : ''}
                                         </td>
                                         <td className="py-5 px-4 text-sm text-right font-mono text-slate-500">
                                             {!isResiduals ? row.etaPartial?.toFixed(3) : ''}
@@ -82,9 +85,9 @@ export const TwoWayANOVAResults = React.memo(function TwoWayANOVAResults({ resul
                 analysisType="two_way_anova"
                 results={displayResults}
                 variableNames={{
-                    targetVar: columns[0] || 'Biến phụ thuộc',
-                    factor1: columns[1] || 'Yếu tố 1',
-                    factor2: columns[2] || 'Yếu tố 2'
+                    targetVar: columns[0] || 'Dependent Variable',
+                    factor1: columns[1] || 'Factor 1',
+                    factor2: columns[2] || 'Factor 2'
                 }}
             />
         </div>

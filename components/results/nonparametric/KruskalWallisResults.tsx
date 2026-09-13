@@ -29,7 +29,7 @@ export const KruskalWallisResults = React.memo(function KruskalWallisResults({ r
                         <Activity className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chi-Square (H)</p>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">H Statistic</p>
                         <p className="text-2xl font-black text-blue-900">{results.statistic?.toFixed(3)}</p>
                     </div>
                 </div>
@@ -49,7 +49,7 @@ export const KruskalWallisResults = React.memo(function KruskalWallisResults({ r
                         <BarChart className="w-6 h-6 text-indigo-600" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">DF</p>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">df</p>
                         <p className="text-2xl font-black text-indigo-900">{results.df}</p>
                     </div>
                 </div>
@@ -60,7 +60,7 @@ export const KruskalWallisResults = React.memo(function KruskalWallisResults({ r
                 <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
                     <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                         <Database className="w-4 h-4 text-blue-600" />
-                        Group Medians (Trung vị theo nhóm)
+                        Group Medians
                     </h3>
                 </div>
                 <div className="overflow-x-auto">
