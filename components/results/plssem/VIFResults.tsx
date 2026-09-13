@@ -204,7 +204,11 @@ export const VIFResults = React.memo(function VIFResults({
             {/* Template Interpretation */}
             <UnifiedASIGInterpretation
                 analysisType="vif"
-                results={results}
+                results={{
+                    vifValues: results.vif_values || results.vifValues || [],
+                    variableNames: results.variable_names || results.variableNames || columns || [],
+                    threshold: results.threshold || 5,
+                }}
             />
         </div>
     );

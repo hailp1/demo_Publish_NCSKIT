@@ -182,7 +182,12 @@ export const OutlierResults = React.memo(function OutlierResults({
             {/* Template Interpretation */}
             <UnifiedASIGInterpretation
                 analysisType="outlier"
-                results={results}
+                results={{
+                    nOutliers: results.n_outliers ?? results.nOutliers ?? 0,
+                    totalN: results.total_n ?? results.totalN ?? (results.n_outliers != null ? results.n_outliers + 100 : 100),
+                    cutoffValue: results.cutoff_value ?? results.cutoffValue ?? 0,
+                    method: results.method || 'Mahalanobis Distance',
+                }}
             />
         </div>
     );

@@ -1,4 +1,4 @@
-// Demo stub — credit wrapper is a no-op; always runs the analysis
+// Demo stub - credit wrapper is a no-op; always runs the analysis
 
 interface RunWithCreditsOptions {
     user?: any;

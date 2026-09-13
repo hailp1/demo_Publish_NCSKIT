@@ -154,10 +154,14 @@ export const HTMTResults = React.memo(function HTMTResults({
                 </CardContent>
             </Card>
 
-            {/* Template Interpretation */}
+            {/* ASIG Interpretation */}
             <UnifiedASIGInterpretation
                 analysisType="htmt"
-                results={results}
+                results={{
+                    htmtMatrix: results.htmt_matrix || results.htmtMatrix || [],
+                    factorNames: results.factor_names || results.factorNames || [],
+                    threshold: results.threshold || 0.85,
+                }}
             />
         </div>
     );

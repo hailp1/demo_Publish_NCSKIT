@@ -97,16 +97,14 @@ export function UnifiedASIGInterpretation({
         const effectiveResults = results?.data ?? results;
         if (!effectiveResults) return;
 
-        const key = JSON.stringify({ analysisType, r: effectiveResults });
-        if (key === prevKey.current && interpretation) return; // skip identical re-runs
+        const key = `${analysisType}::${JSON.stringify(effectiveResults)}`;
+        if (key === prevKey.current) return; // skip identical re-runs
         prevKey.current = key;
 
         setLoading(true);
         setError(null);
 
         try {
-            // Call ASIG engine directly in the browser — no HTTP round-trip needed.
-            // generateInterpretation is pure TypeScript with zero side effects.
             const result = generateInterpretation(
                 analysisType as AnalysisType,
                 { ...effectiveResults, scaleName, variableNames }
@@ -118,7 +116,10 @@ export function UnifiedASIGInterpretation({
         } finally {
             setLoading(false);
         }
-    }, [analysisType, results, scaleName, variableNames, interpretation]);
+    // NOTE: `interpretation` intentionally excluded — including it creates a stale closure
+    // that can return the previous analysis type's result when the component re-renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [analysisType, results, scaleName, variableNames]);
 
     // Auto-fire unless lazy
     useEffect(() => {
