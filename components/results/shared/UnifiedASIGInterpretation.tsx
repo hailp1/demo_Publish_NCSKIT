@@ -31,7 +31,7 @@ import {
     FileText,
     ArrowRight,
 } from 'lucide-react';
-import { InterpretationResult } from '@/lib/asig';
+import { InterpretationResult, generateInterpretation, AnalysisType } from '@/lib/asig';
 
 interface UnifiedASIGInterpretationProps {
     analysisType: string;
@@ -93,7 +93,7 @@ export function UnifiedASIGInterpretation({
     const [copiedAPA, setCopiedAPA] = useState(false);
     const prevKey = useRef<string>('');
 
-    const compute = useCallback(async () => {
+    const compute = useCallback(() => {
         const effectiveResults = results?.data ?? results;
         if (!effectiveResults) return;
 
@@ -105,36 +105,20 @@ export function UnifiedASIGInterpretation({
         setError(null);
 
         try {
-            const response = await fetch('/api/template-interpret', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    analysisType,
-                    results: effectiveResults,
-                    scaleName,
-                    variableNames,
-                }),
-            });
-
-            if (!response.ok) {
-                const errBody = await response.json().catch(() => ({}));
-                throw new Error(errBody.error || `Server error: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            const result: InterpretationResult = data.interpretation || data.structured;
-            if (result) {
-                setInterpretation(result);
-            } else {
-                throw new Error('No interpretation returned.');
-            }
+            // Call ASIG engine directly in the browser — no HTTP round-trip needed.
+            // generateInterpretation is pure TypeScript with zero side effects.
+            const result = generateInterpretation(
+                analysisType as AnalysisType,
+                { ...effectiveResults, scaleName, variableNames }
+            );
+            setInterpretation(result);
         } catch (err: any) {
             console.error('[ASIG]', err);
             setError(err.message || 'Could not generate interpretation.');
         } finally {
             setLoading(false);
         }
-    }, [analysisType, results, scaleName, variableNames]);
+    }, [analysisType, results, scaleName, variableNames, interpretation]);
 
     // Auto-fire unless lazy
     useEffect(() => {
