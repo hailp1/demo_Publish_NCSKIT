@@ -173,37 +173,6 @@ const nextConfig = {
 
     async redirects() {
         return [
-            // Redirect alias domains to primary domain (open.ncskit.org)
-            {
-                source: '/:path*',
-                has: [{ type: 'host', value: 'ncskit.org' }],
-                destination: 'https://open.ncskit.org/:path*',
-                permanent: true,
-            },
-            {
-                source: '/:path*',
-                has: [{ type: 'host', value: 'www.ncskit.org' }],
-                destination: 'https://open.ncskit.org/:path*',
-                permanent: true,
-            },
-            {
-                source: '/:path*',
-                has: [{ type: 'host', value: 'stat.ncskit.org' }],
-                destination: 'https://open.ncskit.org/:path*',
-                permanent: true,
-            },
-            {
-                source: '/:path*',
-                has: [{ type: 'host', value: 'ncsstat.ncskit.org' }],
-                destination: 'https://open.ncskit.org/:path*',
-                permanent: true,
-            },
-            {
-                source: '/:path*',
-                has: [{ type: 'host', value: 'demo_publish_ncskit.vercel.app' }],
-                destination: 'https://open.ncskit.org/:path*',
-                permanent: true,
-            },
             // Existing route redirects
             {
                 source: '/scales',
