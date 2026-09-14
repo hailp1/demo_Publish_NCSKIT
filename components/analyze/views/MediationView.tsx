@@ -29,8 +29,8 @@ interface MediationViewProps {
 
 export const MediationView: React.FC<MediationViewProps> = ({
     step,
-    data,
-    columns,
+    data = [],
+    columns = [],
     allColumns = [],
     user,
     setResults,

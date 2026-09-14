@@ -49,8 +49,8 @@ function autoGroupColumns(columns: string[]): VariableGroup[] {
 }
 
 export function AutoPilotView({
-    data,
-    columns,
+    data = [],
+    columns = [],
     setResults,
     setStep,
     showToast,

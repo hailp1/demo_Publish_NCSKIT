@@ -30,8 +30,8 @@ interface MultivariateViewProps {
 
 export const MultivariateView: React.FC<MultivariateViewProps> = ({
     step,
-    data,
-    columns,
+    data = [],
+    columns = [],
     allColumns = [],
     user,
     profile,

@@ -17,8 +17,8 @@ interface AdvancedMethodViewProps {
 
 export default function AdvancedMethodView({
     method,
-    data,
-    columnNames,
+    data = [],
+    columnNames = [],
     onBack,
     setResults
 }: AdvancedMethodViewProps) {

@@ -28,8 +28,8 @@ interface RegressionViewProps {
 
 export const RegressionView: React.FC<RegressionViewProps> = ({
     step,
-    data,
-    columns,
+    data = [],
+    columns = [],
     user,
     setResults,
     setStep,

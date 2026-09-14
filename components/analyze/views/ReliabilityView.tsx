@@ -35,8 +35,8 @@ interface ReliabilityViewProps {
 
 export const ReliabilityView: React.FC<ReliabilityViewProps> = ({
     step: initialStep,
-    data,
-    columns,
+    data = [],
+    columns = [],
     user,
     setResults,
     setStep: setParentStep,

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * PLS-SEM Analysis View
  * Handles all PLS-SEM specific methods for Analyze2 workflow
  */
@@ -53,8 +53,8 @@ interface PLSSEMViewProps {
 
 export const PLSSEMView: React.FC<PLSSEMViewProps> = ({
     method,
-    data,
-    columns,
+    data = [],
+    columns = [],
     user,
     setResults,
     setStep,

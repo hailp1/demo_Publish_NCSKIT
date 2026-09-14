@@ -33,8 +33,8 @@ interface BasicStatsViewProps {
 
 export function BasicStatsView({
     step,
-    data,
-    columns,
+    data = [],
+    columns = [],
     allColumns,
     profile,
     user,
