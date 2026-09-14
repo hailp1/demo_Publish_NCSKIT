@@ -5,7 +5,13 @@ import HomeContent from '@/components/landing/HomeContent'
 
 export default async function LandingPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null;
+  if (supabase) {
+    try {
+      const { data } = await supabase.auth.getUser();
+      user = data?.user;
+    } catch (e) {}
+  }
 
   // Fetch profile if user exists to provide immediate data to Header/UserMenu
   let profile = null;

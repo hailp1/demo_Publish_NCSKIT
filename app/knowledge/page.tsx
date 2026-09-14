@@ -263,6 +263,7 @@ export default function KnowledgeBase() {
   const fetchArticles = async () => {
     setLoading(true);
     try {
+        if (!supabase) throw new Error("Supabase client is null");
         const { data, error } = await supabase
           .from('knowledge_articles')
           .select('*')

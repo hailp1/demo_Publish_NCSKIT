@@ -10,12 +10,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const { slug } = await params;
     const supabase = getSupabase();
     
-    // Thử lấy dữ liệu từ DB cho SEO
-    const { data: article } = await supabase
-        .from('knowledge_articles')
-        .select('title_vi, category')
-        .eq('slug', slug)
-        .single();
+    let article = null;
+    if (supabase) {
+        try {
+            const { data } = await supabase
+                .from('knowledge_articles')
+                .select('title_vi, category')
+                .eq('slug', slug)
+                .single();
+            article = data;
+        } catch (e) {}
+    }
 
     const currentArticle = article || FALLBACK_ARTICLES[slug];
 

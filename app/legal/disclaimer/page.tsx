@@ -10,7 +10,13 @@ export const metadata = {
 
 export default async function DisclaimerPage() {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    let user = null;
+    if (supabase) {
+        try {
+            const { data } = await supabase.auth.getUser();
+            user = data?.user;
+        } catch (e) {}
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
