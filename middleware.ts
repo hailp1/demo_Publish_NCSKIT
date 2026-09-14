@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
         }
 
         // 2. REDIRECT ALIASES → PRIMARY DOMAIN (open.ncskit.org)
-        const shouldRedirect = REDIRECT_HOSTS.some(h => host.includes(h))
+        const shouldRedirect = REDIRECT_HOSTS.includes(url.hostname)
         if (isProduction && shouldRedirect) {
             url.hostname = PRIMARY_DOMAIN
             url.protocol = 'https:'
