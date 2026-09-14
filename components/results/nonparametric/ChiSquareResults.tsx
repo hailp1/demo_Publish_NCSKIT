@@ -60,6 +60,7 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Observed Counts */}
+                {observed && observed.cols && (
                 <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
                         <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
@@ -78,10 +79,10 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-blue-50">
-                                {observed.rows.map((r: string, idx: number) => (
+                                {observed.rows?.map((r: string, idx: number) => (
                                     <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
                                         <td className="py-5 px-6 text-sm font-bold text-blue-800">{r}</td>
-                                        {observed.data[idx].map((val: number, i: number) => (
+                                        {observed.data?.[idx]?.map((val: number, i: number) => (
                                             <td key={i} className="py-5 px-4 text-sm text-center font-mono font-bold text-slate-900">{val}</td>
                                         ))}
                                     </tr>
@@ -90,8 +91,10 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
                         </table>
                     </div>
                 </div>
+                )}
 
                 {/* Expected Counts */}
+                {expected && expected.cols && (
                 <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden opacity-80">
                     <div className="px-6 py-4 border-b border-blue-50 bg-slate-50/50">
                         <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
@@ -110,10 +113,10 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {expected.rows.map((r: string, idx: number) => (
+                                {expected.rows?.map((r: string, idx: number) => (
                                     <tr key={idx}>
                                         <td className="py-5 px-6 text-sm font-medium">{r}</td>
-                                        {expected.data[idx].map((val: number, i: number) => (
+                                        {expected.data?.[idx]?.map((val: number, i: number) => (
                                             <td key={i} className="py-5 px-4 text-sm text-center font-mono">{val.toFixed(1)}</td>
                                         ))}
                                     </tr>
@@ -122,6 +125,7 @@ export const ChiSquareResults = React.memo(function ChiSquareResults({ results, 
                         </table>
                     </div>
                 </div>
+                )}
             </div>
 
             {/* Professional Template Interpretation */}
