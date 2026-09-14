@@ -1,42 +1,14 @@
-import { createClient } from "@/utils/supabase/server"
-import Header from '@/components/layout/Header'
-import WebRPreloader from '@/components/WebRPreloader'
-import HomeContent from '@/components/landing/HomeContent'
+import React, { Suspense } from 'react';
+import { AnalyzeModule } from '@/components/analyze/AnalyzeModule';
 
-export default async function LandingPage() {
-  const supabase = await createClient()
-  let user = null;
-  if (supabase) {
-    try {
-      const { data } = await supabase.auth.getUser();
-      user = data?.user;
-    } catch (e) {}
-  }
-
-  // Fetch profile if user exists to provide immediate data to Header/UserMenu
-  let profile = null;
-  if (user) {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('id, full_name, avatar_url, role, tokens, orcid_id')
-      .eq('id', user.id)
-      .single();
-    profile = profileData;
-  }
-
-  return (
-    <div className="min-h-screen bg-white font-sans selection:bg-blue-100 selection:text-blue-900">
-      <div className="fixed inset-0 z-0 opacity-40 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
-
-      <div className="relative z-10">
-        <Header user={user} profile={profile} />
-
-        {/* Preload R libraries in background */}
-        <WebRPreloader />
-
-        {/* Client-side content with i18n translations */}
-        <HomeContent />
-      </div>
-    </div>
-  );
+export default function LandingPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent shadow-sm"></div>
+            </div>
+        }>
+            <AnalyzeModule isDemo={true} />
+        </Suspense>
+    );
 }
