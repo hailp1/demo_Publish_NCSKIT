@@ -397,7 +397,7 @@ impact:
   students, and instructors without local installation of any software.
 - **Open instrumentation:** The repository includes a full end-to-end test
   suite (`tests/e2e/`) with a standardised test dataset (`test_data.csv`)
-  covering all 20 supported analysis types, enabling external validation of
+  covering all 22 supported analysis types, enabling external validation of
   all reported numerical results.
 - **Replication package:** The complete source code, R scripts, WASM package
   builds, and ASIG decision-tree logic are publicly available under the MIT
